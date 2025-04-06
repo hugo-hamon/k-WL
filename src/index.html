@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <title>k-WL Visualization</title>
+
+    <link
+      href="https://cdnjs.cloudflare.com/ajax/libs/vis/4.21.0/vis.min.css"
+      rel="stylesheet"
+      type="text/css"
+    />
+
+    <link href="style.css" rel="stylesheet" type="text/css" />
+  </head>
+
+  <body>
+    <h1>k-Weisfeiler-Leman Visualization</h1>
+
+    <div class="controls">
+      <div class="control-group generate-group">
+        <button id="generate-btn">Generate Random Graph</button>
+      </div>
+
+      <div class="control-group wl-controls">
+        <label for="k-value">k:</label>
+        <input type="number" id="k-value" value="1" min="1" max="1" />
+        <button id="iterate-btn">Run WL Iteration</button>
+      </div>
+
+      <div class="control-group status-group">
+        <span id="iteration-info">Iteration: 0</span>
+        <span id="status-info">Status: Ready</span>
+      </div>
+      <div class="control-group load-group">
+        <textarea
+          id="edge-list-input"
+          rows="4"
+          placeholder="Enter edges in the format:
+0 -> 1
+1 -> 2
+..."
+        ></textarea>
+        <button id="load-graph-btn">Load from List</button>
+      </div>
+    </div>
+
+    <div class="container">
+      <div id="graph-network"></div>
+      <div id="info-panel">
+        <h2>Node Information</h2>
+        <div id="info-content">Select a node to see details.</div>
+        <div id="debug-info"></div>
+      </div>
+    </div>
+
+    <script type="module" src="js/main.js"></script>
+    <script
+      type="text/javascript"
+      src="https://cdnjs.cloudflare.com/ajax/libs/vis/4.21.0/vis.min.js"
+    ></script>
+  </body>
+</html>
