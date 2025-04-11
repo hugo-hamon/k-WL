@@ -39,11 +39,20 @@ export function tupleToId(tuple) {
 
 export function generateColorMap(uniqueLabels) {
   const colors = {};
-  const count = uniqueLabels.length;
-  uniqueLabels.forEach((label, index) => {
-    const hue = Math.floor((index / count) * 360);
+  const randomSeed = 15;
+
+  // This is a simple pseudo-random generator based on sine function
+  const random = (seed) => {
+    const x = Math.sin(seed) * 1000;
+    return x - Math.floor(x);
+  };
+
+  uniqueLabels.forEach((label) => {
+    let seed = label + randomSeed;
+    let hue = Math.floor(random(seed) * 360);
     colors[label] = `hsl(${hue}, 70%, 60%)`;
   });
+
   return colors;
 }
 

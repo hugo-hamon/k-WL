@@ -2,14 +2,6 @@ import { tupleToId, areNodesConnected, generateKTuples } from "./utils.js";
 
 export let wlState = null;
 
-function assignInitialLabel(entityId, signature) {
-  if (!wlState.labelMap.has(signature)) {
-    wlState.labelMap.set(signature, wlState.nextLabelId++);
-  }
-  const label = wlState.labelMap.get(signature);
-  wlState.labels.set(entityId, label);
-}
-
 export function initializeWLState(k, nodesDataSet, edgesDataSet, nodeDegrees) {
   wlState = {
     k: k,
@@ -23,7 +15,6 @@ export function initializeWLState(k, nodesDataSet, edgesDataSet, nodeDegrees) {
   if (k === 1) {
     const initialDegreeLabels = new Map();
     nodesDataSet.forEach((node) => {
-      // const degree = nodeDegrees.get(node.id) || 0;
       initialDegreeLabels.set(node.id, 1);
     });
     console.log(

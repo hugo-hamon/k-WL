@@ -101,10 +101,10 @@ export function generateGraphFromEdgeList(edgeListString) {
       const u = parseInt(match[1], 10);
       const v = parseInt(match[2], 10);
 
-      if (u === v) {
-        console.warn(`Skipping self-loop on line ${index + 1}: ${line}`);
-        return; // Skip self-loops
-      }
+      // if (u === v) {
+      //   console.warn(`Skipping self-loop on line ${index + 1}: ${line}`);
+      //   return; // Skip self-loops
+      // }
 
       uniqueNodeIds.add(u);
       uniqueNodeIds.add(v);
