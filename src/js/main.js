@@ -10,7 +10,10 @@ const kInput = document.getElementById("k-value");
 const statusInfo = document.getElementById("status-info");
 
 const loadGraphBtn = document.getElementById("load-graph-btn");
+const saveGraphClipboardBtn = document.getElementById("save-graph-clipboard-btn");
 const edgeListInput = document.getElementById("edge-list-input");
+
+
 
 if (loadGraphBtn && edgeListInput) {
   loadGraphBtn.addEventListener("click", () => {
@@ -177,6 +180,22 @@ document.addEventListener("DOMContentLoaded", () => {
       UI.updateStatus(`Switched to k=${k}. Generate graph first.`);
       iterateBtn.disabled = true;
     }
+  });
+
+  saveGraphClipboardBtn.addEventListener("click", () => {
+    const graphData = Graph.getGraphData();
+    if (graphData.nodes.length === 0) {
+      UI.updateStatus("No graph to save.", "error");
+      return;
+    }
+
+    const edgeList = Graph.generateEdgeList(graphData.edges);
+    navigator.clipboard.writeText(edgeList).then(() => {
+      UI.updateStatus("Graph saved to clipboard!", "success");
+    }).catch(err => {
+      console.error("Failed to copy text: ", err);
+      UI.updateStatus("Failed to save graph to clipboard.", "error");
+    });
   });
 
   initializeVisualization();

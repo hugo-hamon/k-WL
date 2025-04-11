@@ -167,6 +167,10 @@ export function generateGraphFromEdgeList(edgeListString) {
   }
 }
 
+export function generateEdgeList(edges) {
+  return edges.map((edge) => `${edge.from} -> ${edge.to}`).join("\n");
+}
+
 function updateNodeColorsFor2WL() {
   const wlState = getWLState();
   if (!wlState || wlState.k !== 2) return;

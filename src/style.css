@@ -120,7 +120,7 @@ h1 {
   color: #555;
   flex-basis: 200px;
   flex-grow: 1;
-  justify-content: center;
+  justify-content: left;
   padding-right: 10px;
   white-space: nowrap;
 }
