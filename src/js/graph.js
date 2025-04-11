@@ -95,33 +95,41 @@ export function generateGraphFromEdgeList(edgeListString) {
     line = line.trim();
     if (!line) return;
 
-    const match = line.match(/^(\d+)\s*->\s*(\d+)$/);
+    // Split [(u, v), (u, ), ...] to get pairs
+    const pairs = line.match(/\((\d+),\s*(\d*)\)/g);
+    if (pairs) {
+      pairs.forEach((pair) => {
+        const match = pair.match(/\((\d+),\s*(\d*)\)/);
+        if (match) {
+          const u = parseInt(match[1], 10);
+          const v = match[2] ? parseInt(match[2], 10) : null;
 
-    if (match) {
-      const u = parseInt(match[1], 10);
-      const v = parseInt(match[2], 10);
-
-      // if (u === v) {
-      //   console.warn(`Skipping self-loop on line ${index + 1}: ${line}`);
-      //   return; // Skip self-loops
-      // }
-
-      uniqueNodeIds.add(u);
-      uniqueNodeIds.add(v);
-      edgesToAdd.push({ from: u, to: v });
+          uniqueNodeIds.add(u);
+          if (v !== null) {
+            uniqueNodeIds.add(v);
+            edgesToAdd.push({ from: u, to: v });
+          } else {
+            edgesToAdd.push({ from: u, to: null });
+          }
+        } else {
+          console.warn(
+            `Invalid format on line ${index + 1}: "${line}". Expected format: "(u, v)" or "(u, )". Skipping.`
+          );
+          errorCount++;
+        }
+      });
     } else {
       console.warn(
-        `Invalid format on line ${
-          index + 1
-        }: "${line}". Expected format: "number -> number". Skipping.`
+        `Invalid format on line ${index + 1}: "${line}". Expected format: "[(u, v), (u, ), ...]". Skipping.`
       );
       errorCount++;
     }
   });
 
+
   if (uniqueNodeIds.size === 0 && errorCount === lines.length) {
     console.error("No valid edges found in input.");
-    return; // Stop if input was completely invalid or empty
+    return;
   }
 
   // 2. Add Nodes
@@ -129,7 +137,7 @@ export function generateGraphFromEdgeList(edgeListString) {
   sortedNodeIds.forEach((nodeId) => {
     graphData.nodes.add({
       id: nodeId,
-      label: `${nodeId}`, // Label is the ID
+      label: `${nodeId}`,
       shape: "dot",
       size: 15,
       font: { size: 12, color: "#000000" },
@@ -168,7 +176,22 @@ export function generateGraphFromEdgeList(edgeListString) {
 }
 
 export function generateEdgeList(edges) {
-  return edges.map((edge) => `${edge.from} -> ${edge.to}`).join("\n");
+  let new_edges = edges
+    .map((edge) => {
+      if (edge.to === undefined || edge.to === null) {
+        return `(${edge.from}, )`;
+      } else {
+        return `(${edge.from}, ${edge.to})`;
+      }
+    })
+    .reduce((acc, edge) => acc + edge + ", ", "[");
+
+  if (new_edges.length > 1) {
+    new_edges = new_edges.slice(0, -2) + "]";
+  } else {
+    new_edges = new_edges + "]";
+  }
+  return new_edges;
 }
 
 function updateNodeColorsFor2WL() {
