@@ -41,7 +41,7 @@ export function generateColorMap(uniqueLabels) {
   const colors = {};
   const randomSeed = 15;
 
-  // This is a simple pseudo-random generator based on sine function
+  // Pseudo-random generator based on sine function
   const random = (seed) => {
     const x = Math.sin(seed) * 1000;
     return x - Math.floor(x);
