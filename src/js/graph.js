@@ -9,19 +9,16 @@ export let graphData = {
 };
 let nodeDegrees = new Map();
 
-const MAX_NODES = 8;
-const EDGE_PROBABILITY = 0.3;
-
 // --- Graph Generation & Drawing ---
-export function generateRandomGraph() {
+export function generateRandomGraph(size, density = 0.3) {
   console.log(
-    `Generating random graph with up to ${MAX_NODES} nodes and edge probability ${EDGE_PROBABILITY}...`
+    `Generating random graph with up to ${size} nodes and edge probability ${density}...`
   );
 
   graphData.nodes.clear();
   graphData.edges.clear();
 
-  const numNodes = MAX_NODES;
+  const numNodes = size;
 
   for (let i = 1; i <= numNodes; i++) {
     graphData.nodes.add({
@@ -36,7 +33,7 @@ export function generateRandomGraph() {
 
   for (let i = 1; i <= numNodes; i++) {
     for (let j = i + 1; j <= numNodes; j++) {
-      if (Math.random() < EDGE_PROBABILITY) {
+      if (Math.random() < density) {
         graphData.edges.add({
           from: i,
           to: j,
@@ -54,27 +51,59 @@ export function generateRandomGraph() {
     "edges."
   );
 
-  nodeDegrees = calculateNodeDegrees(graphData.nodes, graphData.edges);
+  // Uncomment the following lines to ensure at least one edge per node
+  // nodeDegrees = calculateNodeDegrees(graphData.nodes, graphData.edges);
 
-  for (let i = 1; i <= MAX_NODES; i++) {
-    if (nodeDegrees.get(i) === 0) {
-      let randomNode = -1;
-      while (randomNode === -1 || randomNode === i) {
-        randomNode = Math.floor(Math.random() * MAX_NODES) + 1;
-      }
-      graphData.edges.add({
-        from: i,
-        to: randomNode,
-        width: 1.5,
-      });
-      nodeDegrees.set(randomNode, nodeDegrees.get(randomNode) + 1);
-      nodeDegrees.set(i, 1);
-    }
-  }
+  // for (let i = 1; i <= size; i++) {
+  //   if (nodeDegrees.get(i) === 0) {
+  //     let randomNode = -1;
+  //     while (randomNode === -1 || randomNode === i) {
+  //       randomNode = Math.floor(Math.random() * size) + 1;
+  //     }
+  //     graphData.edges.add({
+  //       from: i,
+  //       to: randomNode,
+  //       width: 1.5,
+  //     });
+  //     nodeDegrees.set(randomNode, nodeDegrees.get(randomNode) + 1);
+  //     nodeDegrees.set(i, 1);
+  //   }
+  // }
 
   if (network) {
     network.setData(graphData);
   }
+}
+
+function isValidBracketBlock(block) {
+  const tuplePattern = /^\(\d+,\s*(\d+)?\)$/;
+  const inner = block.slice(1, -1).trim();
+  if (inner === "") return true;
+
+  const tuples = inner
+    .split("),")
+    .map((s, i, arr) => (i !== arr.length - 1 ? s + ")" : s.trim()));
+  return tuples.every((tuple) => tuplePattern.test(tuple.trim()));
+}
+
+function extractBracketBlocks(flatInput) {
+  const blocks = [];
+  let depth = 0;
+  let startIdx = -1;
+
+  for (let i = 0; i < flatInput.length; i++) {
+    if (flatInput[i] === "[") {
+      if (depth === 0) startIdx = i;
+      depth++;
+    } else if (flatInput[i] === "]") {
+      depth--;
+      if (depth === 0 && startIdx !== -1) {
+        blocks.push(flatInput.slice(startIdx, i + 1));
+        startIdx = -1;
+      }
+    }
+  }
+  return blocks;
 }
 
 export function generateGraphFromEdgeList(edgeListString) {
@@ -87,59 +116,49 @@ export function generateGraphFromEdgeList(edgeListString) {
 
   const uniqueNodeIds = new Set();
   const edgesToAdd = [];
-  const lines = edgeListString.trim().split("\n");
   let errorCount = 0;
 
-  // 1. Parse input string
-  let previous_graph_nodes = new Set();
+  const previous_graph_nodes = new Set();
   let current_graph_nodes = new Set();
-  lines.forEach((line, index) => {
-    line = line.trim();
-    if (!line) return;
 
-    if (line.includes("[")) {
-      // Append current graph nodes to previous graph nodes
-      previous_graph_nodes = previous_graph_nodes.union(current_graph_nodes);
-      current_graph_nodes = new Set();
+  // 1. Normalize the input: flatten and remove line breaks, excess whitespace
+  const flatInput = edgeListString.replace(/\s+/g, "");
+  const blocks = extractBracketBlocks(flatInput);
 
-    }
-
-    // Split [(u, v), (u, ), ...] to get pairs
-    const pairs = line.match(/\((\d+),\s*(\d*)\)/g);
-    if (pairs) {
-      pairs.forEach((pair) => {
-        const match = pair.match(/\((\d+),\s*(\d*)\)/);
-        if (match) {
-          const u = parseInt(match[1], 10) + previous_graph_nodes.size;
-          const v = match[2] ? parseInt(match[2], 10) + previous_graph_nodes.size : null;
-
-          current_graph_nodes.add(u);
-          if (v !== null) {
-            current_graph_nodes.add(v);
-          }
-
-          uniqueNodeIds.add(u);
-          if (v !== null) {
-            uniqueNodeIds.add(v);
-            edgesToAdd.push({ from: u, to: v });
-          } else {
-            edgesToAdd.push({ from: u, to: null });
-          }
-        } else {
-          console.warn(
-            `Invalid format on line ${index + 1}: "${line}". Expected format: "(u, v)" or "(u, )". Skipping.`
-          );
-          errorCount++;
-        }
-      });
-    } else {
+  blocks.forEach((block, index) => {
+    if (!isValidBracketBlock(block)) {
       console.warn(
-        `Invalid format on line ${index + 1}: "${line}". Expected format: "[(u, v), (u, ), ...]". Skipping.`
+        `Invalid format in block ${index + 1}: "${block}". Skipping.`
       );
       errorCount++;
+      return;
     }
-  });
 
+    previous_graph_nodes.forEach((n) => current_graph_nodes.add(n));
+    const tupleMatches = [...block.matchAll(/\((\d+),(\d*)\)/g)];
+
+    tupleMatches.forEach((match) => {
+      const u = parseInt(match[1], 10) + previous_graph_nodes.size;
+      const v = match[2]
+        ? parseInt(match[2], 10) + previous_graph_nodes.size
+        : null;
+
+      current_graph_nodes.add(u);
+      if (v !== null) current_graph_nodes.add(v);
+
+      uniqueNodeIds.add(u);
+      if (v !== null) {
+        uniqueNodeIds.add(v);
+        edgesToAdd.push({ from: u, to: v });
+      }
+    });
+
+    // Push current to previous for next block
+    for (const node of current_graph_nodes) {
+      previous_graph_nodes.add(node);
+    }
+    current_graph_nodes.clear();
+  });
 
   if (uniqueNodeIds.size === 0 && errorCount === lines.length) {
     console.error("No valid edges found in input.");
@@ -192,7 +211,7 @@ export function generateGraphFromEdgeList(edgeListString) {
 export function generateEdgeList(edges) {
   let new_edges = edges
     .map((edge) => {
-      if (edge.to === undefined || edge.to === null) {
+      if (edge.to === undefined && edge.to === null) {
         return `(${edge.from}, )`;
       } else {
         return `(${edge.from}, ${edge.to})`;
@@ -200,10 +219,18 @@ export function generateEdgeList(edges) {
     })
     .reduce((acc, edge) => acc + edge + ", ", "[");
 
+  // For each node that has a degree of 0, add it to the list to the form (x, )
+  nodeDegrees = calculateNodeDegrees(graphData.nodes, graphData.edges);
+  nodeDegrees.forEach((degree, nodeId) => {
+    if (degree === 0 && !new_edges.includes(`(${nodeId}, )`)) {
+      new_edges += `(${nodeId}, ), `;
+    }
+  });
+
   if (new_edges.length > 1) {
     new_edges = new_edges.slice(0, -2) + "]";
   } else {
-    new_edges = new_edges + "]";
+    new_edges += "]";
   }
   return new_edges;
 }
@@ -331,7 +358,7 @@ export function setupNetwork(
       enabled: true,
       stabilization: {
         iterations: 200,
-        updateInterval: 25,
+        updateInterval: 100,
         fit: true,
       },
       barnesHut: {
@@ -339,14 +366,14 @@ export function setupNetwork(
         centralGravity: 0.3,
         springLength: 120,
         springConstant: 0.05,
-        damping: 0.09,
+        damping: 0.5,
       },
       solver: "barnesHut",
     },
     interaction: {
       hover: true,
       navigationButtons: false,
-      keyboard: true,
+      keyboard: false,
       tooltipDelay: 200,
     },
     nodes: {

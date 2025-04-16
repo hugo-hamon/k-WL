@@ -5,15 +5,17 @@ import * as UI from "./ui.js";
 // --- DOM Elements ---
 const graphContainer = document.getElementById("graph-network");
 const generateBtn = document.getElementById("generate-btn");
+const graphSizeInput = document.getElementById("graph-size");
+const graphDensityInput = document.getElementById("graph-density");
 const iterateBtn = document.getElementById("iterate-btn");
 const kInput = document.getElementById("k-value");
 const statusInfo = document.getElementById("status-info");
 
 const loadGraphBtn = document.getElementById("load-graph-btn");
-const saveGraphClipboardBtn = document.getElementById("save-graph-clipboard-btn");
+const saveGraphClipboardBtn = document.getElementById(
+  "save-graph-clipboard-btn"
+);
 const edgeListInput = document.getElementById("edge-list-input");
-
-
 
 if (loadGraphBtn && edgeListInput) {
   loadGraphBtn.addEventListener("click", () => {
@@ -62,6 +64,11 @@ document.addEventListener("DOMContentLoaded", () => {
   if (
     !graphContainer ||
     !generateBtn ||
+    !graphSizeInput ||
+    !graphDensityInput ||
+    !loadGraphBtn ||
+    !saveGraphClipboardBtn ||
+    !edgeListInput ||
     !iterateBtn ||
     !kInput ||
     !statusInfo
@@ -84,8 +91,20 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function initializeVisualization() {
+    const sizeInput = parseInt(graphSizeInput.value, 10);
+    const densityInput = parseFloat(graphDensityInput.value);
+    
+    if (sizeInput <= 1 || sizeInput > 100) {
+      UI.updateStatus("Graph size must be between 2 and 100.", "error");
+      return;
+    }
+    if (densityInput < 0 || densityInput > 1) {
+      UI.updateStatus("Graph density must be between 0 and 1.", "error");
+      return;
+    }
+
     UI.updateStatus("Generating graph...", "busy");
-    Graph.generateRandomGraph();
+    Graph.generateRandomGraph(sizeInput, densityInput);
 
     const k = parseInt(kInput.value, 10) || 1;
     UI.updateStatus(`Initializing WL for k=${k}...`, "busy");
@@ -158,6 +177,14 @@ document.addEventListener("DOMContentLoaded", () => {
     }, 10);
   });
 
+  graphSizeInput.addEventListener("change", () => {
+    initializeVisualization();
+  });
+
+  graphDensityInput.addEventListener("change", () => {
+    initializeVisualization();
+  });
+
   kInput.addEventListener("change", () => {
     const k = parseInt(kInput.value, 10) || 1;
     const currentGraphData = Graph.getGraphData();
@@ -190,12 +217,15 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     const edgeList = Graph.generateEdgeList(graphData.edges);
-    navigator.clipboard.writeText(edgeList).then(() => {
-      UI.updateStatus("Graph saved to clipboard!", "success");
-    }).catch(err => {
-      console.error("Failed to copy text: ", err);
-      UI.updateStatus("Failed to save graph to clipboard.", "error");
-    });
+    navigator.clipboard
+      .writeText(edgeList)
+      .then(() => {
+        UI.updateStatus("Graph saved to clipboard!", "success");
+      })
+      .catch((err) => {
+        console.error("Failed to copy text: ", err);
+        UI.updateStatus("Failed to save graph to clipboard.", "error");
+      });
   });
 
   initializeVisualization();

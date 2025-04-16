@@ -101,6 +101,7 @@ export function compute1WLSignature(nodeId, currentLabels, networkInstance) {
   return signature;
 }
 
+// Diverge sometimes TO FIX
 function run1WLIteration(networkInstance) {
   const currentLabels = wlState.labels;
   const signaturesThisIteration = new Map();

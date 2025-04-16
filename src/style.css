@@ -115,6 +115,21 @@ h1 {
   box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
 }
 
+.generate-group input[type="number"] {
+  width: 70px;
+  padding: 5px 8px;
+  border: 1px solid var(--border-color-dark);
+  border-radius: 4px;
+  text-align: center;
+  font-size: 1em;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+.generate-group input[type="number"]:focus {
+  outline: none;
+  border-color: var(--link-color);
+  box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
+}
+
 .status-group {
   font-size: 0.9em;
   color: #555;
@@ -266,6 +281,11 @@ h1 {
 
 #status-info.status-converged {
   color: #28a745;
+  font-weight: bold;
+}
+
+#status-info.status-error {
+  color: #dc3545;
   font-weight: bold;
 }
 
