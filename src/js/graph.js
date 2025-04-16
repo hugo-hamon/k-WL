@@ -91,7 +91,6 @@ export function generateGraphFromEdgeList(edgeListString) {
   let errorCount = 0;
 
   // 1. Parse input string
-  let graph_count = 0;
   let previous_graph_nodes = new Set();
   let current_graph_nodes = new Set();
   lines.forEach((line, index) => {
@@ -99,7 +98,6 @@ export function generateGraphFromEdgeList(edgeListString) {
     if (!line) return;
 
     if (line.includes("[")) {
-      graph_count++;
       // Append current graph nodes to previous graph nodes
       previous_graph_nodes = previous_graph_nodes.union(current_graph_nodes);
       current_graph_nodes = new Set();
@@ -108,7 +106,6 @@ export function generateGraphFromEdgeList(edgeListString) {
 
     // Split [(u, v), (u, ), ...] to get pairs
     const pairs = line.match(/\((\d+),\s*(\d*)\)/g);
-    console.log(graph_count, previous_graph_nodes.size, current_graph_nodes.size);
     if (pairs) {
       pairs.forEach((pair) => {
         const match = pair.match(/\((\d+),\s*(\d*)\)/);
