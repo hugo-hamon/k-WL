@@ -24,6 +24,7 @@
 *::after {
   box-sizing: border-box;
 }
+
 body {
   font-family: var(--font-family-sans);
   margin: 0;
@@ -95,9 +96,12 @@ h1 {
   height: auto;
 }
 
+.wl-controls {
+  padding: 0 10px;
+}
+
 .wl-controls label {
   font-weight: 500;
-  margin-right: -5px;
 }
 
 .wl-controls input[type="number"] {
@@ -109,6 +113,7 @@ h1 {
   font-size: 1em;
   transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
+
 .wl-controls input[type="number"]:focus {
   outline: none;
   border-color: var(--link-color);
@@ -124,10 +129,23 @@ h1 {
   font-size: 1em;
   transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
+
 .generate-group input[type="number"]:focus {
   outline: none;
   border-color: var(--link-color);
   box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
+}
+
+.top {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.bottom {
+  width: 100%;
+  display: flex;
 }
 
 .status-group {
@@ -136,8 +154,8 @@ h1 {
   flex-basis: 200px;
   flex-grow: 1;
   justify-content: left;
-  padding-right: 10px;
   white-space: nowrap;
+  padding: 0 15px;
 }
 
 .controls button {
@@ -227,14 +245,17 @@ h1 {
 #info-content p {
   margin-bottom: 1em;
 }
+
 #info-content strong {
   color: var(--heading-color);
 }
+
 #info-content hr {
   border: none;
   border-top: 1px solid var(--border-color-light);
   margin: 1.5em 0;
 }
+
 #info-content code,
 #info-content .signature {
   font-family: var(--font-family-mono);
@@ -244,6 +265,7 @@ h1 {
   font-size: 0.9em;
   word-break: break-all;
 }
+
 #info-content table {
   width: 100%;
   border-collapse: collapse;
@@ -251,6 +273,7 @@ h1 {
   margin: 1em 0;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
 }
+
 #info-content th,
 #info-content td {
   border: 1px solid var(--border-color-medium);
@@ -258,11 +281,13 @@ h1 {
   text-align: left;
   vertical-align: top;
 }
+
 #info-content th {
   background-color: #f0f0f0;
   font-weight: 600;
   color: var(--heading-color);
 }
+
 #info-content td:last-child {
   word-break: break-all;
   font-family: var(--font-family-mono);
@@ -296,18 +321,23 @@ h1 {
     column-gap: 10px;
     padding: 10px;
   }
+
   .control-group {
     flex-basis: 100%;
     justify-content: center;
+    flex-wrap: wrap;
   }
+
   .load-group {
     flex-direction: column;
     align-items: stretch;
     flex-basis: auto;
   }
+
   .load-group button {
     margin-top: 5px;
   }
+
   .status-group {
     justify-content: center;
     text-align: center;
@@ -319,6 +349,17 @@ h1 {
     flex-direction: column;
     height: calc(100vh - 50px - 150px);
   }
+
+  .top {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .bottom {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
   #graph-network,
   #info-panel {
     width: 100%;
@@ -326,6 +367,7 @@ h1 {
     border-right: none;
     border-bottom: 1px solid var(--border-color-light);
   }
+
   #info-panel {
     border-bottom: none;
   }
