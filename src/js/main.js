@@ -93,7 +93,7 @@ document.addEventListener("DOMContentLoaded", () => {
   function initializeVisualization() {
     const sizeInput = parseInt(graphSizeInput.value, 10);
     const densityInput = parseFloat(graphDensityInput.value);
-    
+
     if (sizeInput <= 1 || sizeInput > 100) {
       UI.updateStatus("Graph size must be between 2 and 100.", "error");
       return;

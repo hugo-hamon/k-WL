@@ -389,7 +389,7 @@ export function setupNetwork(
     edges: {
       width: 1.5,
       color: {
-        color: "#cccccc",
+        color: "#8f8f8f",
         highlight: "#888888",
         hover: "#bbbbbb",
       },
