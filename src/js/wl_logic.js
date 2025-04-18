@@ -95,10 +95,33 @@ export function compute1WLSignature(nodeId, currentLabels, networkInstance) {
     .map((neighborId) => currentLabels.get(neighborId))
     .filter((label) => label !== undefined)
     .sort((a, b) => a - b);
-
   const currentNodeLabel = currentLabels.get(nodeId);
   const signature = `${currentNodeLabel}|${neighborLabels.join(",")}`;
   return signature;
+}
+
+function customSignatureSort(a, b) {
+  const [aLabel, aNeighbors] = a.split("|");
+  const [bLabel, bNeighbors] = b.split("|");
+
+  const aLabelNum = parseInt(aLabel, 10);
+  const bLabelNum = parseInt(bLabel, 10);
+
+  if (aLabelNum !== bLabelNum) {
+    return aLabelNum - bLabelNum;
+  }
+
+  const aNeighborNums = aNeighbors.split(",").map(Number);
+  const bNeighborNums = bNeighbors.split(",").map(Number);
+
+  const minLength = Math.min(aNeighborNums.length, bNeighborNums.length);
+  for (let i = 0; i < minLength; i++) {
+    if (aNeighborNums[i] !== bNeighborNums[i]) {
+      return aNeighborNums[i] - bNeighborNums[i];
+    }
+  }
+
+  return aNeighborNums.length - bNeighborNums.length;
 }
 
 // Diverge sometimes TO FIX
@@ -125,7 +148,8 @@ function run1WLIteration(networkInstance) {
 
   const uniqueSignatures = [
     ...new Set(signaturesThisIteration.values()),
-  ].sort();
+  ].sort(customSignatureSort);
+  console.log(new Set(signaturesThisIteration.values()), uniqueSignatures);
   const signatureToNewLabelMap = new Map();
   uniqueSignatures.forEach((sig, index) => {
     signatureToNewLabelMap.set(sig, index);
