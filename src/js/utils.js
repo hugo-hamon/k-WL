@@ -16,20 +16,20 @@ export function generateKTuples(k, nodesDataSet) {
     return result;
   }
 
-  function generateCombinations(start_index, current_tuple) {
-    if (current_tuple.length === k) {
-      result.push([...current_tuple].sort((a, b) => a - b));
+  const generateTuples = (currentTuple, startIndex) => {
+    if (currentTuple.length === k) {
+      result.push([...currentTuple]);
       return;
     }
 
-    for (let i = start_index; i < nodeIds.length; i++) {
-      current_tuple.push(nodeIds[i]);
-      generateCombinations(i + 1, current_tuple);
-      current_tuple.pop();
+    for (let i = startIndex; i < nodeIds.length; i++) {
+      currentTuple.push(nodeIds[i]);
+      generateTuples(currentTuple, i);
+      currentTuple.pop();
     }
-  }
+  };
 
-  generateCombinations(0, []);
+  generateTuples([], 0);
   return result;
 }
 

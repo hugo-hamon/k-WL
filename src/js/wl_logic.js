@@ -42,13 +42,7 @@ export function initializeWLState(k, nodesDataSet, edgesDataSet, nodeDegrees) {
     tuples.forEach((tuple) => {
       const tupleString = tupleToId(tuple);
       const isConnected = areNodesConnected(tuple[0], tuple[1], edgesDataSet);
-      const degreeSignature = tuple
-        .map((nodeId) => nodeDegrees.get(nodeId) || 0)
-        .sort((a, b) => a - b)
-        .join("-");
-      const signature = `k2-degs:${degreeSignature}-conn:${
-        isConnected ? 1 : 0
-      }`;
+      const signature = `${isConnected ? 1 : 0}`;
       initialTupleSignatures.set(tupleString, signature);
     });
     console.log(
@@ -58,6 +52,7 @@ export function initializeWLState(k, nodesDataSet, edgesDataSet, nodeDegrees) {
     const uniqueInitialSignatures = [
       ...new Set(initialTupleSignatures.values()),
     ].sort();
+
     const signatureToCompressedLabel = new Map();
     uniqueInitialSignatures.forEach((sig, index) => {
       signatureToCompressedLabel.set(sig, index);
@@ -72,8 +67,7 @@ export function initializeWLState(k, nodesDataSet, edgesDataSet, nodeDegrees) {
     });
     wlState.labels = initialCompressedLabels;
     console.log(
-      `Initial signatures compressed to ${
-        uniqueInitialSignatures.length
+      `Initial signatures compressed to ${uniqueInitialSignatures.length
       } labels (0-${uniqueInitialSignatures.length - 1}):`,
       wlState.labels
     );
@@ -172,18 +166,15 @@ function run1WLIteration(networkInstance) {
   if (currentLabels.size !== newLabels.size) changed = true;
 
   console.log(
-    `--- Fin Itération ${wlState.iteration + 1}. Changé: ${changed}. ${
-      uniqueSignatures.length
-    } signatures uniques mappées aux labels 0 à ${
-      uniqueSignatures.length - 1
+    `--- Fin Itération ${wlState.iteration + 1}. Changé: ${changed}. ${uniqueSignatures.length
+    } signatures uniques mappées aux labels 0 à ${uniqueSignatures.length - 1
     }. ---`
   );
 
   if (!changed) {
     wlState.converged = true;
     console.log(
-      `>>>>>> 1-WL CONVERGENCE DETECTEE à l'itération ${
-        wlState.iteration + 1
+      `>>>>>> 1-WL CONVERGENCE DETECTEE à l'itération ${wlState.iteration + 1
       } <<<<<<`
     );
   } else {
@@ -195,16 +186,6 @@ function run1WLIteration(networkInstance) {
     });
   }
   return changed;
-}
-
-function get2TuplesFromLabels() {
-  const tuples = [];
-  wlState.labels.forEach((label, key) => {
-    if (typeof key === "string" && (key.match(/_/g) || []).length === 1) {
-      tuples.push(key);
-    }
-  });
-  return tuples;
 }
 
 function compute2WLSignature(tuple, currentLabels, allNodeIds) {
@@ -298,18 +279,15 @@ function run2WLIteration(nodesDataSet) {
   }
 
   console.log(
-    `--- Fin Itération ${wlState.iteration + 1}. Changé: ${changed}. ${
-      uniqueSignatures.length
-    } signatures uniques mappées aux labels 0 à ${
-      uniqueSignatures.length - 1
+    `--- Fin Itération ${wlState.iteration + 1}. Changé: ${changed}. ${uniqueSignatures.length
+    } signatures uniques mappées aux labels 0 à ${uniqueSignatures.length - 1
     }. ---`
   );
 
   if (!changed) {
     wlState.converged = true;
     console.log(
-      `>>>>>> 2-WL CONVERGENCE DETECTEE à l'itération ${
-        wlState.iteration + 1
+      `>>>>>> 2-WL CONVERGENCE DETECTEE à l'itération ${wlState.iteration + 1
       } <<<<<<`
     );
   } else {

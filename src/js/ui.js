@@ -73,7 +73,7 @@ export function updateInfoPanelContent() {
     }):</strong> ${neighbors.join(", ")}</p>`;
   } else if (k === 2) {
     content += `<p><strong>Mode:</strong> 2-WL</p>`;
-
+    
     const tuples2WL = Array.from(wlState.labels.keys()).filter((tupleId) => {
       if ((tupleId.match(/_/g) || []).length === 1) {
         const [node1, node2] = tupleId.split("_").map(Number);
@@ -81,11 +81,12 @@ export function updateInfoPanelContent() {
       }
       return false;
     });
-
+    
     content += `<p>Node ${selectedNodeId} participates in ${tuples2WL.length} 2-tuples:</p>`;
-
+    
     if (tuples2WL.length > 0) {
-      content += `<div style="max-height: 300px; overflow-y: auto;"><table style="width: 100%; border-collapse: collapse; font-size: 0.9em;">`;
+      console.log("2-WL selected");
+      content += `<div style="max-height: 500px; overflow-y: auto;"><table style="width: 100%; border-collapse: collapse; font-size: 0.9em;">`;
       content += `<tr><th>Tuple</th><th>Label (Iter ${currentIter})</th>`;
       if (
         wlState.currentSignatures &&
@@ -104,12 +105,7 @@ export function updateInfoPanelContent() {
         const label = wlState.labels.get(tupleId);
         let signature = "N/A";
         if (currentIter === 0) {
-          for (const [sig, lbl] of wlState.labelMap.entries()) {
-            if (lbl === label) {
-              signature = `Initial sig. for Label ${label}`;
-              break;
-            }
-          }
+          signature = "N/A";
         } else if (wlState.currentSignatures) {
           signature = wlState.currentSignatures.get(tupleId) || "N/A";
         }
