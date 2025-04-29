@@ -67,7 +67,8 @@ export function initializeWLState(k, nodesDataSet, edgesDataSet, nodeDegrees) {
     });
     wlState.labels = initialCompressedLabels;
     console.log(
-      `Initial signatures compressed to ${uniqueInitialSignatures.length
+      `Initial signatures compressed to ${
+        uniqueInitialSignatures.length
       } labels (0-${uniqueInitialSignatures.length - 1}):`,
       wlState.labels
     );
@@ -118,7 +119,41 @@ function customSignatureSort(a, b) {
   return aNeighborNums.length - bNeighborNums.length;
 }
 
-// Diverge sometimes TO FIX
+function custom2WLSignatureSort(sigA, sigB) {
+  const [labelA, multisetA] = sigA.split("|");
+  const [labelB, multisetB] = sigB.split("|");
+
+  const labelANum = parseInt(labelA, 10);
+  const labelBNum = parseInt(labelB, 10);
+
+  if (labelANum !== labelBNum) {
+    return labelANum - labelBNum;
+  }
+
+  const pairsA = multisetA
+    .slice(1, -1) // enlever premier et dernier crochets
+    .split("][")
+    .map((pair) => pair.split(",").map(Number));
+
+  const pairsB = multisetB
+    .slice(1, -1)
+    .split("][")
+    .map((pair) => pair.split(",").map(Number));
+
+  const minLength = Math.min(pairsA.length, pairsB.length);
+
+  for (let i = 0; i < minLength; i++) {
+    if (pairsA[i][0] !== pairsB[i][0]) {
+      return pairsA[i][0] - pairsB[i][0];
+    }
+    if (pairsA[i][1] !== pairsB[i][1]) {
+      return pairsA[i][1] - pairsB[i][1];
+    }
+  }
+
+  return pairsA.length - pairsB.length;
+}
+
 function run1WLIteration(networkInstance) {
   const currentLabels = wlState.labels;
   const signaturesThisIteration = new Map();
@@ -140,9 +175,9 @@ function run1WLIteration(networkInstance) {
 
   wlState.currentSignatures = new Map(signaturesThisIteration);
 
-  const uniqueSignatures = [
-    ...new Set(signaturesThisIteration.values()),
-  ].sort(customSignatureSort);
+  const uniqueSignatures = [...new Set(signaturesThisIteration.values())].sort(
+    customSignatureSort
+  );
   console.log(new Set(signaturesThisIteration.values()), uniqueSignatures);
   const signatureToNewLabelMap = new Map();
   uniqueSignatures.forEach((sig, index) => {
@@ -166,15 +201,18 @@ function run1WLIteration(networkInstance) {
   if (currentLabels.size !== newLabels.size) changed = true;
 
   console.log(
-    `--- Fin Itération ${wlState.iteration + 1}. Changé: ${changed}. ${uniqueSignatures.length
-    } signatures uniques mappées aux labels 0 à ${uniqueSignatures.length - 1
+    `--- Fin Itération ${wlState.iteration + 1}. Changé: ${changed}. ${
+      uniqueSignatures.length
+    } signatures uniques mappées aux labels 0 à ${
+      uniqueSignatures.length - 1
     }. ---`
   );
 
   if (!changed) {
     wlState.converged = true;
     console.log(
-      `>>>>>> 1-WL CONVERGENCE DETECTEE à l'itération ${wlState.iteration + 1
+      `>>>>>> 1-WL CONVERGENCE DETECTEE à l'itération ${
+        wlState.iteration + 1
       } <<<<<<`
     );
   } else {
@@ -193,33 +231,35 @@ function compute2WLSignature(tuple, currentLabels, allNodeIds) {
   const [u, v] = tuple;
   const currentTupleLabel = currentLabels.get(tupleId);
 
-  const multisetU = [];
-  const multisetV = [];
+  const multiset = [];
 
   allNodeIds.forEach((w) => {
-    if (w !== u && w !== v) {
-      const uwTuple = [u, w].sort((a, b) => a - b);
-      const uwTupleId = tupleToId(uwTuple);
-      const uwLabel = currentLabels.get(uwTupleId);
-      if (uwLabel !== undefined) {
-        multisetU.push(uwLabel);
-      }
+    const uwTuple = [u, w].sort((a, b) => a - b);
+    const uwTupleId = tupleToId(uwTuple);
+    const uwLabel = currentLabels.get(uwTupleId);
 
-      const vwTuple = [v, w].sort((a, b) => a - b);
-      const vwTupleId = tupleToId(vwTuple);
-      const vwLabel = currentLabels.get(vwTupleId);
-      if (vwLabel !== undefined) {
-        multisetV.push(vwLabel);
-      }
+    const vwTuple = [v, w].sort((a, b) => a - b);
+    const vwTupleId = tupleToId(vwTuple);
+    const vwLabel = currentLabels.get(vwTupleId);
+    if (vwLabel !== undefined && uwLabel !== undefined) {
+      let tupleLabel = [uwLabel, vwLabel].sort((a, b) => a - b);
+      multiset.push(tupleLabel);
     }
   });
+  console.log(`multiset avant tri pour ${tupleId}`, multiset);
+  multiset.sort((a, b) => {
+    if (a[0] !== b[0]) {
+      return a[0] - b[0];
+    } else {
+      return a[1] - b[1];
+    }
+  });
+  console.log(`multiset pour ${tupleId}`, multiset);
 
-  multisetU.sort((a, b) => a - b);
-  multisetV.sort((a, b) => a - b);
-
-  const signature = `${currentTupleLabel}|${multisetU.join(
-    ","
-  )}|${multisetV.join(",")}`;
+  // current_label | [ij] [i'j'] [i''j''] ...
+  const multisetString = multiset.map((pair) => pair.join(",")).join("][");
+  const multisetStringWithBrackets = `[${multisetString}]`;
+  const signature = `${currentTupleLabel}|${multisetStringWithBrackets}`;
   return signature;
 }
 
@@ -236,13 +276,12 @@ function getTupleKeysFromLabels() {
 }
 
 function run2WLIteration(nodesDataSet) {
+  console.log(`--- Début Itération ${wlState.iteration + 1} (2-WL) ---`);
   const currentLabels = wlState.labels;
   const signaturesThisIteration = new Map();
   let changed = false;
   const allNodeIds = nodesDataSet.getIds();
   const currentTupleIds = getTupleKeysFromLabels();
-
-  console.log(`--- Début Itération ${wlState.iteration + 1} (2-WL) ---`);
 
   currentTupleIds.forEach((tupleId) => {
     const tuple = tupleId.split("_").map(Number);
@@ -252,9 +291,9 @@ function run2WLIteration(nodesDataSet) {
 
   wlState.currentSignatures = new Map(signaturesThisIteration);
 
-  const uniqueSignatures = [
-    ...new Set(signaturesThisIteration.values()),
-  ].sort();
+  const uniqueSignatures = [...new Set(signaturesThisIteration.values())].sort(
+    custom2WLSignatureSort
+  );
   const signatureToNewLabelMap = new Map();
   uniqueSignatures.forEach((sig, index) => {
     signatureToNewLabelMap.set(sig, index);
@@ -279,15 +318,18 @@ function run2WLIteration(nodesDataSet) {
   }
 
   console.log(
-    `--- Fin Itération ${wlState.iteration + 1}. Changé: ${changed}. ${uniqueSignatures.length
-    } signatures uniques mappées aux labels 0 à ${uniqueSignatures.length - 1
+    `--- Fin Itération ${wlState.iteration + 1}. Changé: ${changed}. ${
+      uniqueSignatures.length
+    } signatures uniques mappées aux labels 0 à ${
+      uniqueSignatures.length - 1
     }. ---`
   );
 
   if (!changed) {
     wlState.converged = true;
     console.log(
-      `>>>>>> 2-WL CONVERGENCE DETECTEE à l'itération ${wlState.iteration + 1
+      `>>>>>> 2-WL CONVERGENCE DETECTEE à l'itération ${
+        wlState.iteration + 1
       } <<<<<<`
     );
   } else {

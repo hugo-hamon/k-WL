@@ -1,3 +1,5 @@
+import * as Graph from "./graph.js";
+import { generateColorMap, areNodesConnected } from "./utils.js";
 import { getWLState, compute1WLSignature } from "./wl_logic.js";
 import {
   getNetworkInstance,
@@ -19,6 +21,117 @@ export function updateInfoPanelContent() {
   const network = getNetworkInstance();
 
   if (selectedNodeId === null || !wlState || !network) {
+    const network = getNetworkInstance();
+    if (!network) {
+      clearInfoPanel();
+      return;
+    }
+    if (selectedNodeId === null && wlState && wlState.k === 2) {
+      // Display matrices when no node is selected and k=2
+      let matrixHtml = "<h3>Adjacency Matrices (2-WL State)</h3>";
+
+      const nodes = network.getPositions(); // Use getPositions to get all nodes in the network
+      const nodeIds = Object.keys(nodes)
+        .map(Number)
+        .sort((a, b) => a - b);
+      const numNodes = nodeIds.length;
+      const graphData = Graph.getGraphData();
+      const edgesDataSet = graphData.edges; // Access edges from the network data
+
+      if (numNodes === 0) {
+        matrixHtml += "<p>No nodes in the graph.</p>";
+      } else {
+        // Function to generate a single matrix HTML
+        const generateMatrixHtml = (title, labels, isInitial) => {
+          let html = `<h4 style="margin-top: 1em;">${title}</h4>`;
+          html += `
+            <div style="overflow-x: auto; max-width: 100%;">
+              <table class="adjacency-matrix-table" style="
+                border-collapse: collapse;
+                font-family: monospace;
+                font-size: 0.8em;
+                border: 1px solid #ccc;
+              ">
+                <thead style="position: sticky; top: 0; background-color: #f5f5f5;">
+                  <tr>
+                    <th></th>
+                    ${nodeIds.map(id => `<th style="padding: 4px; border: 1px solid #ccc; text-align: center;">${id}</th>`).join("")}
+                  </tr>
+                </thead>
+                <tbody>
+          `;
+        
+          nodeIds.forEach(rowId => {
+            html += `<tr><th style="padding: 4px; border: 1px solid #ccc; background-color: #f0f0f0; text-align: center;">${rowId}</th>`;
+            nodeIds.forEach(colId => {
+              const tupleId = rowId < colId ? `${rowId}_${colId}` : `${colId}_${rowId}`;
+              const isConnected = areNodesConnected(rowId, colId, edgesDataSet);
+              let cellColor = "#ffffff";
+        
+              if (isInitial) {
+                cellColor = labels.get(tupleId) ? "#cccccc" : "#ffffff";
+              } else {
+                const label = labels.get(tupleId);
+                if (label !== undefined) {
+                  const uniqueLabels = [...new Set(labels.values())];
+                  const colorMap = generateColorMap(uniqueLabels);
+                  cellColor = colorMap[label] || "#cccccc";
+                }
+              }
+        
+              html += `<td style="width: 24px; height: 24px; padding: 0; border: 1px solid #ccc; background-color: ${cellColor};"></td>`;
+            });
+            html += "</tr>";
+          });
+        
+          html += "</tbody></table></div>";
+          return html;
+        };
+
+        // Display initial state matrix if current iteration is 0
+        if (wlState.iteration === 0) {
+          const initialLabels = new Map();
+          for (let i = 0; i < nodeIds.length; i++) {
+            for (let j = i + 1; j < nodeIds.length; j++) {
+              const id1 = nodeIds[i];
+              const id2 = nodeIds[j];
+              const tupleId = `${id1}_${id2}`;
+              const isConnected = areNodesConnected(id1, id2, edgesDataSet);
+              initialLabels.set(tupleId, isConnected ? 1 : 0);
+            }
+          }
+          matrixHtml += generateMatrixHtml(
+            "Initial State",
+            initialLabels,
+            true
+          );
+        } else {
+          // Display previous iteration matrix
+          if (wlState.history.length > 1) {
+            // Need at least 2 entries for prev and current
+            const prevLabels =
+              wlState.history[wlState.history.length - 2].labels;
+            matrixHtml += generateMatrixHtml(
+              `Iteration ${wlState.iteration - 1}`,
+              prevLabels,
+              wlState.iteration === 1
+            );
+          }
+
+          // Display current iteration matrix
+          matrixHtml += generateMatrixHtml(
+            `Iteration ${wlState.iteration}`,
+            wlState.labels,
+            false
+          );
+        }
+      }
+
+      infoContent.innerHTML = matrixHtml;
+      return; // Exit the function after displaying matrices
+    }
+
+    // Original code for displaying node information when a node is selected
     clearInfoPanel();
     return;
   }
@@ -73,7 +186,7 @@ export function updateInfoPanelContent() {
     }):</strong> ${neighbors.join(", ")}</p>`;
   } else if (k === 2) {
     content += `<p><strong>Mode:</strong> 2-WL</p>`;
-    
+
     const tuples2WL = Array.from(wlState.labels.keys()).filter((tupleId) => {
       if ((tupleId.match(/_/g) || []).length === 1) {
         const [node1, node2] = tupleId.split("_").map(Number);
@@ -81,9 +194,9 @@ export function updateInfoPanelContent() {
       }
       return false;
     });
-    
+
     content += `<p>Node ${selectedNodeId} participates in ${tuples2WL.length} 2-tuples:</p>`;
-    
+
     if (tuples2WL.length > 0) {
       console.log("2-WL selected");
       content += `<div style="max-height: 500px; overflow-y: auto;"><table style="width: 100%; border-collapse: collapse; font-size: 0.9em;">`;
@@ -188,6 +301,7 @@ export function handleNodeSelection(params) {
 export function handleNodeDeselection() {
   selectedNodeId = null;
   clearInfoPanel();
+  updateInfoPanelContent();
   unhighlightAll();
 }
 

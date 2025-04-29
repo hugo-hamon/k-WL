@@ -239,38 +239,16 @@ function updateNodeColorsFor2WL() {
   const wlState = getWLState();
   if (!wlState || wlState.k !== 2) return;
 
-  const nodeImportance = new Map();
-  graphData.nodes.getIds().forEach((id) => nodeImportance.set(id, 0));
-
-  wlState.labels.forEach((label, tupleString) => {
-    if ((tupleString.match(/_/g) || []).length === 1) {
-      const [node1, node2] = tupleString.split("_").map(Number);
-      nodeImportance.set(node1, (nodeImportance.get(node1) || 0) + 1);
-      nodeImportance.set(node2, (nodeImportance.get(node2) || 0) + 1);
-    }
-  });
-
-  const importanceValues = Array.from(nodeImportance.values());
-  const minImportance = Math.min(...importanceValues);
-  const maxImportance = Math.max(...importanceValues);
-
   const nodeUpdates = [];
   graphData.nodes.forEach((node) => {
-    const importance = nodeImportance.get(node.id) || 0;
-    const normalizedImportance =
-      maxImportance > minImportance
-        ? (importance - minImportance) / (maxImportance - minImportance)
-        : 0.5;
-
-    const r = Math.round(255 * (1 - normalizedImportance));
-    const b = Math.round(255 * normalizedImportance);
-    const color = `rgb(${r}, 100, ${b})`;
+    const importance = 0.5;
+    const color = `rgb(100, 100, 128)`;
 
     nodeUpdates.push({
       id: node.id,
       color: { background: color, border: "#333333" },
-      label: `${node.id}\nTuples: ${importance}`,
-      size: 12 + normalizedImportance * 10,
+      label: `${node.id}`,
+      size: 12 + importance * 10,
     });
   });
   graphData.nodes.update(nodeUpdates);
@@ -286,6 +264,7 @@ export function updateVisualization() {
     const currentLabels = wlState.labels;
     console.log("Current labels:", currentLabels);
     const uniqueLabels = [...new Set(currentLabels.values())];
+    console.log("Unique labels:", uniqueLabels);
     const colorMap = generateColorMap(uniqueLabels);
 
     graphData.nodes.forEach((node) => {

@@ -44,6 +44,7 @@ if (loadGraphBtn && edgeListInput) {
         Graph.updateVisualization();
         UI.updateIterationDisplay();
         UI.clearInfoPanel();
+        UI.updateInfoPanelContent();
         iterateBtn.disabled = false;
         UI.updateStatus("Graph loaded. Ready for iteration.");
       } else {
@@ -119,6 +120,7 @@ document.addEventListener("DOMContentLoaded", () => {
     Graph.updateVisualization();
     UI.updateIterationDisplay();
     UI.clearInfoPanel();
+    UI.updateInfoPanelContent();
     iterateBtn.disabled = false;
     UI.updateStatus("Ready");
   }
@@ -201,6 +203,7 @@ document.addEventListener("DOMContentLoaded", () => {
       Graph.updateVisualization();
       UI.updateIterationDisplay();
       UI.clearInfoPanel();
+      UI.updateInfoPanelContent();
       iterateBtn.disabled = false;
       UI.updateStatus(`Switched to k=${k}. Ready for iteration.`);
     } else {

@@ -38,22 +38,16 @@ export function tupleToId(tuple) {
 }
 
 export function generateColorMap(uniqueLabels) {
-  const colors = {};
-  const randomSeed = 15;
+  const colorMap = {};
+  const pastelBase = 220;
+  const step = 360 / uniqueLabels.length;
 
-  // Pseudo-random generator based on sine function
-  const random = (seed) => {
-    const x = Math.sin(seed) * 1000;
-    return x - Math.floor(x);
-  };
-
-  uniqueLabels.forEach((label) => {
-    let seed = label + randomSeed;
-    let hue = Math.floor(random(seed) * 360);
-    colors[label] = `hsl(${hue}, 70%, 60%)`;
+  uniqueLabels.sort().forEach((label, i) => {
+    const hue = (pastelBase + i * step) % 360;
+    colorMap[label] = `hsl(${hue}, 80%, 70%)`;
   });
 
-  return colors;
+  return colorMap;
 }
 
 export function areNodesConnected(nodeId1, nodeId2, edgesDataSet) {
