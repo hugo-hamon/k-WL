@@ -46,7 +46,7 @@ export function initializeWLState(k, nodesDataSet, edgesDataSet, nodeDegrees) {
       initialTupleSignatures.set(tupleString, signature);
     });
     console.log(
-      `Initialized 2-WL. Computed ${initialTupleSignatures.size} initial signatures.`
+      `Initialized 2-FWL. Computed ${initialTupleSignatures.size} initial signatures.`
     );
 
     const uniqueInitialSignatures = [
@@ -276,7 +276,7 @@ function getTupleKeysFromLabels() {
 }
 
 function run2WLIteration(nodesDataSet) {
-  console.log(`--- Début Itération ${wlState.iteration + 1} (2-WL) ---`);
+  console.log(`--- Début Itération ${wlState.iteration + 1} (2-FWL) ---`);
   const currentLabels = wlState.labels;
   const signaturesThisIteration = new Map();
   let changed = false;
@@ -328,7 +328,7 @@ function run2WLIteration(nodesDataSet) {
   if (!changed) {
     wlState.converged = true;
     console.log(
-      `>>>>>> 2-WL CONVERGENCE DETECTEE à l'itération ${
+      `>>>>>> 2-FWL CONVERGENCE DETECTEE à l'itération ${
         wlState.iteration + 1
       } <<<<<<`
     );

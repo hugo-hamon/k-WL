@@ -74,7 +74,7 @@ export function updateInfoPanelContent() {
     }
     if (selectedNodeId === null && wlState && wlState.k === 2) {
       // Display matrices when no node is selected and k=2
-      let matrixHtml = "<h3>Adjacency Matrices (2-WL State)</h3>";
+      let matrixHtml = "<h3>Adjacency Matrices (2-FWL State)</h3>";
       matrixHtml += "<p><i>Hover over a cell (i, j) to highlight the edge between nodes i and j in the graph.</i></p>";
 
       const nodes = network.getPositions();
@@ -247,7 +247,7 @@ export function updateInfoPanelContent() {
     content += `<hr><p><strong>Neighbors (${neighbors.length
       }):</strong> ${neighbors.join(", ")}</p>`;
   } else if (k === 2) {
-    content += `<p><strong>Mode:</strong> 2-WL</p>`;
+    content += `<p><strong>Mode:</strong> 2-FWL</p>`;
 
     const tuples2WL = Array.from(wlState.labels.keys()).filter((tupleId) => {
       if ((tupleId.match(/_/g) || []).length === 1) {
@@ -260,7 +260,7 @@ export function updateInfoPanelContent() {
     content += `<p>Node ${selectedNodeId} participates in ${tuples2WL.length} 2-tuples:</p>`;
 
     if (tuples2WL.length > 0) {
-      console.log("2-WL selected");
+      console.log("2-FWL selected");
       content += `<div style="max-height: 500px; overflow-y: auto;"><table style="width: 100%; border-collapse: collapse; font-size: 0.9em;">`;
       content += `<tr><th>Tuple</th><th>Label (Iter ${currentIter})</th>`;
       if (
@@ -299,7 +299,7 @@ export function updateInfoPanelContent() {
       });
 
       content += `</table></div>`;
-      content += `<p style="margin-top: 10px; font-style: italic; font-size: 0.85em;">2-WL refines tuple labels based on the labels of related tuples involving neighboring nodes.</p>`;
+      content += `<p style="margin-top: 10px; font-style: italic; font-size: 0.85em;">2-FWL refines tuple labels based on the labels of related tuples involving neighboring nodes.</p>`;
     } else {
       content +=
         "<p>No 2-tuples involving this node found in current state.</p>";

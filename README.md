@@ -4,24 +4,23 @@
 
 A web-based tool for visualizing the k-Weisfeiler-Leman (k-WL) graph labeling algorithm, a procedure used in graph isomorphism testing in graph neural networks. This application interactively demonstrates the 1-WL and 2-FWL algorithms step-by-step.
 
-![k-WL Visualizer Screenshot](assets/website.png "Screenshot of the k-WL Visualizer")
+![k-WL Visualizer Screenshot](assets/website_k1.png "Screenshot of the 1-WL Visualizer")
+![k-WL Visualizer Screenshot](assets/website_k2.png "Screenshot of the 2-FWL Visualizer")
 
 ## 🚧 In progress
-This project is a work in progress. The current version implements the k-WL algorithm for k=1. The 2-FWL version is under development. The current implementation is functional but may have some bugs and limitations. Feel free to report any issues you encounter.
+This project is a work in progress. The current implementation is functional but may have some bugs and limitations. Feel free to report any issues you encounter.
 
 ## 📖 Overview
 
-The Weisfeiler-Leman algorithm iteratively refines labels (colors) assigned to nodes or tuples of nodes in a graph based on the labels of their neighbors. If two graphs are isomorphic, they will produce the same final labeling counts (or histogram) after the algorithm converges. This tool helps in understanding how these labels evolve over iterations for k=1 (node labeling) and k=2 (node-pair labeling).
+The Weisfeiler-Leman algorithm iteratively refines labels (colors) assigned to nodes or tuples of nodes in a graph based on the labels of their neighbors. If two graphs are isomorphic, they will produce the same final labeling counts (or histogram) after the algorithm converges. This tool helps in understanding how these labels evolve over iterations for k=1 (node labeling) and k=2 (tuple labeling).
 
-This visualization is aimed at educational purposes, making it easier to grasp the concepts behind the WL algorithm and its applications in graph theory and machine learning.
+This visualization is aimed at educational purposes, making it easier to grasp the concepts behind the WL / FWL algorithm and its applications in graph theory and machine learning.
 
 ## 🚀 Features
 
-* **Random Graph Generation:** Creates random graphs using the Erdős-Rényi model with a specified number of nodes and edge probability. You can adjust the parameters in `src/js/graph.js`, the default settings are:
-    * **Nodes:** 8
-    * **Edge Probability:** 0.3
+* **Random Graph Generation:** Creates random graphs using the Erdős-Rényi model with a specified number of nodes and edge probability. You can adjust the parameters to generate different graphs.
 * **k-WL:** Supports both 1-WL and 2-FWL algorithms.
-* **Step-by-Step Iteration:** Run the WL algorithm one iteration at a time to observe changes.
+* **Step-by-Step Iteration:** Run the WL / FWL algorithm one iteration at a time to observe changes.
 * **Interactive Visualization:** Uses `vis.js` for smooth graph rendering and interaction.
 * **Detailed Info Panel:** Select a node to see:
     * Its current label.
@@ -29,6 +28,7 @@ This visualization is aimed at educational purposes, making it easier to grasp t
     * Neighbor information (for 1-WL) or participating tuples (for 2-FWL).
 * **Convergence Detection:** The application indicates when the algorithm has stabilized (labels no longer change).
 * **Customizable Graphs:** Load your own graphs by giving a list of edges
+* **Export Graph:** Save to clipboard the current graph in a format that can be used to load it again in the application.
 
 ## 🛠️ Getting Started
 
@@ -61,9 +61,7 @@ To run this application locally, you need Python 3 installed.
 5.  **Repeat:** Continue iterating until the status shows "Converged".
 
 ## 💡 Future Work Ideas
-* Implement the 2-FWL algorithm with adjacency matrix visualization.
-* Other layouts to visualize two graphs side by side.
-* Folklore WL algorithm for graph isomorphism testing.
+* 2-WL with tuple labels (currently only supports 2-FWL).
 
 
 ## 👀 Contributing
