@@ -9,6 +9,13 @@ export let graphData = {
 };
 let nodeDegrees = new Map();
 
+// Highlighted edges (2-FWL)
+let highlightedEdgeInfo = null;
+let temporaryEdgeId = null;
+const DEFAULT_EDGE_COLOR = "#8f8f8f";
+const HIGHLIGHT_EDGE_COLOR = "red";
+const HIGHLIGHT_EDGE_WIDTH = 3;
+
 // --- Graph Generation & Drawing ---
 export function generateRandomGraph(size, density = 0.3) {
   console.log(
@@ -38,6 +45,7 @@ export function generateRandomGraph(size, density = 0.3) {
           from: i,
           to: j,
           width: 1.5,
+          color: { color: DEFAULT_EDGE_COLOR },
         });
       }
     }
@@ -211,7 +219,7 @@ export function generateGraphFromEdgeList(edgeListString) {
 export function generateEdgeList(edges) {
   let new_edges = edges
     .map((edge) => {
-      if (edge.to === undefined && edge.to === null) {
+      if (edge.to === undefined || edge.to === null) {
         return `(${edge.from}, )`;
       } else {
         return `(${edge.from}, ${edge.to})`;
@@ -258,6 +266,8 @@ export function updateVisualization() {
   const wlState = getWLState();
   if (!wlState) return;
 
+  unhighlightGraphEdge();
+
   const nodeUpdates = [];
 
   if (wlState.k === 1) {
@@ -275,6 +285,8 @@ export function updateVisualization() {
         color: { background: color, border: "#333333" },
         label: `${node.id}\nL:${labelValue}`,
         size: 15,
+        borderWidth: 1,
+        shadow: { enabled: false },
       });
     });
     graphData.nodes.update(nodeUpdates);
@@ -304,6 +316,7 @@ export function highlightSelection(selectedNodeId) {
         id: nid,
         color: { border: "orange" },
         shadow: { enabled: true, color: "rgba(255,165,0,0.3)", size: 5 },
+        borderWidth: 2,
       });
     });
   }
@@ -317,12 +330,81 @@ export function unhighlightAll() {
     id: id,
     borderWidth: 1,
     shadow: { enabled: false },
+    color: { border: graphData.nodes.get(id)?.color?.border || "#2B7CE9" }
   }));
   if (nodeUpdates.length > 0) {
     graphData.nodes.update(nodeUpdates);
   }
 }
 
+export function highlightGraphEdge(nodeId1, nodeId2) {
+  if (!network || nodeId1 === nodeId2) return; // Don't highlight self-loops or if network isn't ready
+
+  // Clear previous highlight first
+  unhighlightGraphEdge();
+
+  const existingEdges = graphData.edges.get({
+    filter: function (edge) {
+      return (
+        (edge.from === nodeId1 && edge.to === nodeId2) ||
+        (edge.from === nodeId2 && edge.to === nodeId1)
+      );
+    },
+  });
+
+  if (existingEdges.length > 0) {
+    // Edge exists, highlight it
+    const edgeToHighlight = existingEdges[0];
+    highlightedEdgeInfo = {
+      id: edgeToHighlight.id,
+      originalColor: edgeToHighlight.color?.color || DEFAULT_EDGE_COLOR,
+      originalWidth: edgeToHighlight.width || 1.5,
+    };
+    graphData.edges.update({
+      id: edgeToHighlight.id,
+      color: { color: HIGHLIGHT_EDGE_COLOR },
+      width: HIGHLIGHT_EDGE_WIDTH,
+      shadow: { enabled: true, color: 'rgba(255,0,0,0.5)', size: 8 },
+      smooth: true,
+    });
+  } else {
+    // Edge doesn't exist, add a temporary one
+    const tempId = `temp_${nodeId1}_${nodeId2}`;
+    temporaryEdgeId = tempId;
+    graphData.edges.add({
+      id: tempId,
+      from: nodeId1,
+      to: nodeId2,
+      color: { color: 'rgba(255,0,0,0.5)' },
+      width: HIGHLIGHT_EDGE_WIDTH,
+      dashes: [5, 5],
+      smooth: true,
+      physics: false,
+    });
+  }
+}
+
+export function unhighlightGraphEdge() {
+  if (!network) return;
+
+  if (temporaryEdgeId) {
+    graphData.edges.remove(temporaryEdgeId);
+    temporaryEdgeId = null;
+  } else if (highlightedEdgeInfo) {
+    // Check if the edge still exists before trying to update it
+    const edgeExists = graphData.edges.get(highlightedEdgeInfo.id);
+    if (edgeExists) {
+      graphData.edges.update({
+        id: highlightedEdgeInfo.id,
+        color: { color: highlightedEdgeInfo.originalColor },
+        width: highlightedEdgeInfo.originalWidth,
+        shadow: { enabled: false },
+        smooth: { enabled: true, type: 'continuous' },
+      });
+    }
+    highlightedEdgeInfo = null;
+  }
+}
 // --- Initialization ---
 
 export function setupNetwork(
@@ -368,13 +450,14 @@ export function setupNetwork(
     edges: {
       width: 1.5,
       color: {
-        color: "#8f8f8f",
+        color: DEFAULT_EDGE_COLOR,
         highlight: "#888888",
         hover: "#bbbbbb",
       },
       smooth: {
         enabled: true,
         type: "continuous",
+        roundness: 0.5,
       },
       arrows: { to: { enabled: false } },
     },
@@ -403,6 +486,12 @@ export function setupNetwork(
 
   network.on("selectNode", selectHandler);
   network.on("deselectNode", deselectHandler);
+
+  network.on("click", function (params) {
+    if (params.nodes.length === 0 && params.edges.length === 0) {
+      unhighlightGraphEdge();
+    }
+  });
 
   return network;
 }
