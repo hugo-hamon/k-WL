@@ -1,6 +1,7 @@
 import * as Graph from "./graph.js";
 import * as WLLogic from "./wl_logic.js";
 import * as UI from "./ui.js";
+import * as Gallery from "./gallery.js";
 
 // --- DOM Elements ---
 const graphContainer = document.getElementById("graph-network");
@@ -61,7 +62,7 @@ if (loadGraphBtn && edgeListInput) {
 let network = null;
 
 // --- Initialization ---
-document.addEventListener("DOMContentLoaded", () => {
+document.addEventListener("DOMContentLoaded", async () => {
   if (
     !graphContainer ||
     !generateBtn ||
@@ -232,4 +233,5 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
   initializeVisualization();
+  await Gallery.initializeGallery();
 });

@@ -22,9 +22,9 @@ function setupMatrixHoverListeners() {
     return;
   }
 
-  infoContent.addEventListener('mouseover', (event) => {
+  infoContent.addEventListener("mouseover", (event) => {
     // Use closest to find the cell, works even if there are inner elements later
-    const cell = event.target.closest('.matrix-cell');
+    const cell = event.target.closest(".matrix-cell");
     if (cell) {
       const rowId = parseInt(cell.dataset.rowId, 10);
       const colId = parseInt(cell.dataset.colId, 10);
@@ -34,8 +34,8 @@ function setupMatrixHoverListeners() {
     }
   });
 
-  infoContent.addEventListener('mouseout', (event) => {
-    const cell = event.target.closest('.matrix-cell');
+  infoContent.addEventListener("mouseout", (event) => {
+    const cell = event.target.closest(".matrix-cell");
     // Check if the mouse is *really* leaving the infoContent area or just moving between cells
     if (cell && !infoContent.contains(event.relatedTarget)) {
       unhighlightGraphEdge();
@@ -75,7 +75,8 @@ export function updateInfoPanelContent() {
     if (selectedNodeId === null && wlState && wlState.k === 2) {
       // Display matrices when no node is selected and k=2
       let matrixHtml = "<h3>Adjacency Matrices (2-FWL State)</h3>";
-      matrixHtml += "<p><i>Hover over a cell (i, j) to highlight the edge between nodes i and j in the graph.</i></p>";
+      matrixHtml +=
+        "<p><i>Hover over a cell (i, j) to highlight the edge between nodes i and j in the graph.</i></p>";
 
       const nodes = network.getPositions();
       const nodeIds = Object.keys(nodes)
@@ -102,17 +103,23 @@ export function updateInfoPanelContent() {
                 <thead style="position: sticky; top: 0; background-color: #f5f5f5; z-index: 1;">
                   <tr>
                     <th></th>
-                    ${nodeIds.map(id => `<th style="padding: 4px; border: 1px solid #ccc; text-align: center; min-width: 25px;">${id}</th>`).join("")}
+                    ${nodeIds
+                      .map(
+                        (id) =>
+                          `<th style="padding: 4px; border: 1px solid #ccc; text-align: center; min-width: 25px;">${id}</th>`
+                      )
+                      .join("")}
                   </tr>
                 </thead>
                 <tbody>
           `;
 
-          nodeIds.forEach(rowId => {
+          nodeIds.forEach((rowId) => {
             html += `<tr><th style="padding: 4px; border: 1px solid #ccc; background-color: #f0f0f0; text-align: center;">${rowId}</th>`;
-            nodeIds.forEach(colId => {
+            nodeIds.forEach((colId) => {
               // --- Add data attributes and class to TD ---
-              const tupleId = rowId < colId ? `${rowId}_${colId}` : `${colId}_${rowId}`;
+              const tupleId =
+                rowId < colId ? `${rowId}_${colId}` : `${colId}_${rowId}`;
               let cellColor = "#ffffff";
               let cellContent = "";
               let titleAttr = `Nodes (${rowId}, ${colId})`;
@@ -120,24 +127,28 @@ export function updateInfoPanelContent() {
               if (isInitial) {
                 const label = labels.get(tupleId);
                 cellColor = label === 1 ? "#cccccc" : "#ffffff";
-                cellContent = label !== undefined ? label : '-';
-                titleAttr += label === 1 ? ' - Connected' : ' - Not Connected';
+                cellContent = label !== undefined ? label : "-";
+                titleAttr += label === 1 ? " - Connected" : " - Not Connected";
               } else {
                 const label = labels.get(tupleId);
                 if (label !== undefined) {
                   const uniqueLabels = [...new Set(labels.values())];
-                  const colorMap = generateColorMap(uniqueLabels.sort((a, b) => a - b));
+                  const colorMap = generateColorMap(
+                    uniqueLabels.sort((a, b) => a - b)
+                  );
                   cellColor = colorMap[label] || "#cccccc";
                   cellContent = label;
                   titleAttr += ` - Label: ${label}`;
                 } else {
                   cellColor = "#f8f8f8";
-                  cellContent = '-';
-                  titleAttr += ' - Label: N/A';
+                  cellContent = "-";
+                  titleAttr += " - Label: N/A";
                 }
               }
 
-              html += `<td class="matrix-cell" data-row-id="${rowId}" data-col-id="${colId}" title="${titleAttr}" style="width: 24px; height: 24px; padding: 0; border: 1px solid #ccc; background-color: ${cellColor}; text-align: center; vertical-align: middle; cursor: ${rowId === colId ? 'default' : 'pointer'};"></td>`;
+              html += `<td class="matrix-cell" data-row-id="${rowId}" data-col-id="${colId}" title="${titleAttr}" style="width: 24px; height: 24px; padding: 0; border: 1px solid #ccc; background-color: ${cellColor}; text-align: center; vertical-align: middle; cursor: ${
+                rowId === colId ? "default" : "pointer"
+              };"></td>`;
             });
             html += "</tr>";
           });
@@ -163,7 +174,6 @@ export function updateInfoPanelContent() {
           true,
           "adjacency-matrix-table-initial"
         );
-
 
         if (wlState.iteration > 0 && wlState.history.length > 1) {
           const prevLabels = wlState.history[wlState.iteration - 1]?.labels;
@@ -194,7 +204,6 @@ export function updateInfoPanelContent() {
       return;
     }
 
-
     // Original code for displaying node information when a node is selected
     clearInfoPanel();
     return;
@@ -213,8 +222,9 @@ export function updateInfoPanelContent() {
     const signature =
       wlState.currentSignatures?.get(selectedNodeId) || "N/A (Initial State)";
 
-    content += `<p><strong>Current WL Label:</strong> ${currentLabel ?? "N/A"
-      }</p>`;
+    content += `<p><strong>Current WL Label:</strong> ${
+      currentLabel ?? "N/A"
+    }</p>`;
 
     if (prevIter >= 0 && history[prevIter]) {
       const prevLabels = history[prevIter].labels;
@@ -244,8 +254,9 @@ export function updateInfoPanelContent() {
     }
 
     const neighbors = network.getConnectedNodes(selectedNodeId);
-    content += `<hr><p><strong>Neighbors (${neighbors.length
-      }):</strong> ${neighbors.join(", ")}</p>`;
+    content += `<hr><p><strong>Neighbors (${
+      neighbors.length
+    }):</strong> ${neighbors.join(", ")}</p>`;
   } else if (k === 2) {
     content += `<p><strong>Mode:</strong> 2-FWL</p>`;
 

@@ -1,0 +1,39 @@
+{
+  "sections": [
+    {
+      "name": "Graphes Simples",
+      "description": "Graphes fondamentaux et basiques",
+      "graphs": {
+        "cycle": {
+          "name": "Cycle",
+          "edges": [
+            "(0,1)", "(1,2)", "(2,3)", "(3,4)", "(4,5)", "(5,0)"
+          ],
+          "description": "Un graphe cyclique simple"
+        },
+        "star": {
+          "name": "Étoile",
+          "edges": [
+            "(0,1)", "(0,2)", "(0,3)", "(0,4)", "(0,5)"
+          ],
+          "description": "Un graphe en forme d'étoile"
+        }
+      }
+    },
+    {
+      "name": "Graphes Non-Isomorphes",
+      "description": "Paires de graphes qui ne sont pas isomorphes",
+      "graphs": {
+        "pair": {
+          "name": "Paires de Graphes",
+          "edges": [
+            "(0,1)", "(1,2)", "(2,3)", "(3,4)", "(4,5)", "(5,0)",
+            "(6,7)", "(7,8)", "(8,9)", "(9,10)", "(10,11)", "(11,6)",
+            "(6,9)", "(7,10)", "(8,11)"
+          ],
+          "description": "Paires de graphes non-isomorphes"
+        }
+      }
+    }
+  ]
+} 

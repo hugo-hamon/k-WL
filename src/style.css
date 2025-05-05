@@ -30,10 +30,9 @@ body {
   margin: 0;
   background-color: var(--main-bg-color);
   color: var(--text-color);
-  display: flex;
-  flex-direction: column;
-  height: 100vh;
-  overflow: hidden;
+  min-height: 100vh;
+  overflow-x: hidden;
+  overflow-y: auto;
 }
 
 /* --- Title --- */
@@ -43,7 +42,6 @@ h1 {
   margin: 15px 0;
   font-size: 1.8em;
   font-weight: 600;
-  flex-shrink: 0;
 }
 
 /* --- Controls Bar --- */
@@ -57,7 +55,6 @@ h1 {
   column-gap: 20px;
   align-items: center;
   justify-content: center;
-  flex-shrink: 0;
 }
 
 .control-group {
@@ -208,10 +205,9 @@ h1 {
 /* --- Main Container (Graph + Info Panel) --- */
 .container {
   display: flex;
-  flex-grow: 1;
-  height: calc(100vh - 50px - 60px);
-  min-height: 300px;
-  overflow: hidden;
+  height: calc(100vh - 180px);
+  min-height: 500px;
+  margin-bottom: 2rem;
 }
 
 /* --- Graph Area & Info Panel --- */
@@ -347,7 +343,7 @@ h1 {
 
   .container {
     flex-direction: column;
-    height: calc(100vh - 50px - 150px);
+    height: calc(100vh - 250px);
   }
 
   .top {
@@ -411,4 +407,146 @@ h1 {
 
 #info-panel .adjacency-matrix-table td:hover {
   background-color: #f5f5f5;
+}
+
+/* Styles pour les sections de la galerie */
+.gallery-section {
+  margin-top: 2rem;
+  padding: 1rem;
+}
+
+.gallery-section h2 {
+  margin-bottom: 1.5rem;
+  color: #333;
+}
+
+.gallery-container {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+.gallery-category {
+  background: #f8f9fa;
+  border-radius: 8px;
+  padding: 1rem;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.gallery-category-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.5rem;
+  cursor: pointer;
+  user-select: none;
+}
+
+.gallery-category-header h3 {
+  margin: 0;
+  color: #2c3e50;
+}
+
+.gallery-category-description {
+  color: #666;
+  font-size: 0.9rem;
+  margin: 0.5rem 0;
+}
+
+.gallery-category-content {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 1.5rem;
+  padding: 1rem;
+  transition: all 0.3s ease;
+}
+
+.gallery-category.collapsed .gallery-category-content {
+  display: none;
+}
+
+.toggle-icon {
+  transition: transform 0.3s ease;
+}
+
+.gallery-category.collapsed .toggle-icon {
+  transform: rotate(-90deg);
+}
+
+/* Styles pour la galerie de graphes */
+.gallery-item {
+  background: var(--controls-bg-color);
+  border-radius: 8px;
+  padding: 1rem;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  transition: transform 0.2s ease;
+  border: 1px solid var(--border-color-light);
+  display: flex;
+  flex-direction: column;
+}
+
+.gallery-item:hover {
+  transform: translateY(-5px);
+}
+
+.gallery-item h4 {
+  margin: 0 0 1rem 0;
+  color: var(--heading-color);
+  text-align: center;
+}
+
+.graph-preview {
+  height: 200px;
+  background: var(--main-bg-color);
+  border-radius: 4px;
+  margin-bottom: 1rem;
+  border: 1px solid var(--border-color-light);
+  position: relative;
+  overflow: hidden;
+}
+
+.graph-preview > div {
+  width: 100% !important;
+  height: 100% !important;
+  position: relative !important;
+}
+
+.graph-preview canvas {
+  position: absolute !important;
+  transform: none !important;
+  margin: 0 !important;
+}
+
+.graph-description {
+  text-align: center;
+  margin-top: auto;
+}
+
+.graph-description p {
+  margin-bottom: 1rem;
+  color: var(--text-color);
+  font-size: 0.9rem;
+}
+
+.copy-btn {
+  background-color: var(--button-bg-color);
+  color: var(--text-color);
+  border: 1px solid var(--border-color-dark);
+  padding: 0.5rem 1rem;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  width: 100%;
+  max-width: 200px;
+  margin: 0 auto;
+}
+
+.copy-btn:hover {
+  background-color: var(--button-hover-bg-color);
+  border-color: var(--border-color-dark);
+}
+
+.copy-btn:active {
+  background-color: var(--button-active-bg-color);
+  transform: scale(0.98);
 }
