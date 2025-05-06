@@ -455,9 +455,9 @@ h1 {
 
 .gallery-category-content {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-  gap: 1.5rem;
-  padding: 1rem;
+  grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+  gap: 2rem;
+  padding: 1.5rem;
   transition: all 0.3s ease;
 }
 
@@ -496,7 +496,7 @@ h1 {
 }
 
 .graph-preview {
-  height: 200px;
+  height: 500px;
   background: var(--main-bg-color);
   border-radius: 4px;
   margin-bottom: 1rem;

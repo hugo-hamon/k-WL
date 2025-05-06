@@ -141,20 +141,30 @@ export async function initializeGallery() {
           physics: {
             enabled: true,
             stabilization: {
-              enabled: true,
-              iterations: 100,
+              iterations: 200,
+              updateInterval: 100,
               fit: true
             },
             barnesHut: {
-              gravitationalConstant: -1500,
-              springLength: 80,
-              springConstant: 0.04
-            }
+              gravitationalConstant: -5000,
+              centralGravity: 0.3,
+              springLength: 120,
+              springConstant: 0.05,
+              damping: 0.5
+            },
+            solver: 'barnesHut',
+            minVelocity: 0.75,
+            maxVelocity: 30
           },
           interaction: {
             hover: true,
-            zoomView: false,
-            dragView: false
+            zoomView: true,
+            dragView: true,
+            mouseWheel: {
+              enabled: true,
+              speed: 0.5,
+              zoomAtCursor: true
+            }
           },
           layout: {
             improvedLayout: true,
@@ -164,7 +174,8 @@ export async function initializeGallery() {
             }
           },
           width: '100%',
-          height: '100%'
+          height: '100%',
+          autoResize: true
         };
 
         // Créer le réseau
@@ -177,37 +188,100 @@ export async function initializeGallery() {
         // Stocker la référence au réseau dans le conteneur
         previewContainer.__vis_network__ = previewNetwork;
 
+        // Fonction pour calculer les centres des graphes
+        function calculateGraphCenters(numGraphs, containerWidth, containerHeight) {
+          const centers = [];
+          const padding = 150;
+          const availableWidth = containerWidth - 2 * padding;
+          const availableHeight = containerHeight - 2 * padding;
+          
+          // Pour 2 graphes, les placer horizontalement avec plus d'espace
+          if (numGraphs === 2) {
+            centers.push({
+              x: -availableWidth / 3,
+              y: 0
+            });
+            centers.push({
+              x: availableWidth / 3,
+              y: 0
+            });
+            return centers;
+          }
+          
+          // Pour plus de 2 graphes, utiliser une disposition en grille
+          const numCols = Math.ceil(Math.sqrt(numGraphs));
+          const numRows = Math.ceil(numGraphs / numCols);
+          
+          const spacingX = availableWidth / (numCols + 1);
+          const spacingY = availableHeight / (numRows + 1);
+          
+          for (let i = 0; i < numGraphs; i++) {
+            const row = Math.floor(i / numCols);
+            const col = i % numCols;
+            
+            centers.push({
+              x: padding + spacingX * (col + 1) - containerWidth / 2,
+              y: padding + spacingY * (row + 1) - containerHeight / 2
+            });
+          }
+          
+          return centers;
+        }
+
         // Générer les données du graphe
         const nodes = [];
         const edges = [];
         
-        // Créer les nœuds avec des positions initiales centrées
-        const maxNode = Math.max(...graphData.edges.map(edge => {
-          const [from, to] = edge.replace(/[()]/g, '').split(',').map(Number);
-          return Math.max(from, to);
-        }));
+        // Obtenir les dimensions du conteneur
+        const containerWidth = previewContainer.clientWidth || 600;
+        const containerHeight = previewContainer.clientHeight || 400;
         
-        // Calculer le rayon du cercle pour les positions
-        const radius = 100;
-        const centerX = 0;
-        const centerY = 0;
+        // Calculer les centres pour tous les graphes
+        const centers = calculateGraphCenters(graphData.graphs.length, containerWidth, containerHeight);
         
-        for (let i = 0; i <= maxNode; i++) {
-          const angle = (2 * Math.PI * i) / (maxNode + 1);
-          const x = centerX + radius * Math.cos(angle);
-          const y = centerY + radius * Math.sin(angle);
-          nodes.push({ 
-            id: i, 
-            label: String(i),
-            x: x,
-            y: y
+        // Calculer les positions pour chaque graphe
+        graphData.graphs.forEach((graph, graphIndex) => {
+          // Calculer le nombre total de nœuds dans ce graphe
+          const graphNodes = new Set();
+          graph.edges.forEach(edge => {
+            const [from, to] = edge.replace(/[()]/g, '').split(',').map(Number);
+            graphNodes.add(from);
+            graphNodes.add(to);
           });
-        }
+          
+          // Utiliser le centre calculé
+          const center = centers[graphIndex];
+          
+          // Calculer le rayon en fonction du nombre de graphes et de la taille du conteneur
+          const baseRadius = Math.min(containerWidth, containerHeight) / 6;
+          const radius = baseRadius / Math.sqrt(graphData.graphs.length);
+          
+          // Positionner les nœuds de ce graphe
+          Array.from(graphNodes).forEach((nodeId, nodeIndex) => {
+            const nodeAngle = (2 * Math.PI * nodeIndex) / graphNodes.size;
+            const x = center.x + radius * Math.cos(nodeAngle);
+            const y = center.y + radius * Math.sin(nodeAngle);
+            
+            // Vérifier si le nœud existe déjà
+            const existingNode = nodes.find(n => n.id === nodeId);
+            if (!existingNode) {
+              nodes.push({ 
+                id: nodeId, 
+                label: String(nodeId),
+                x: x,
+                y: y,
+                fixed: false // Fixer la position initiale
+              });
+            }
+          });
+        });
         
-        // Créer les arêtes
-        graphData.edges.forEach(edge => {
-          const [from, to] = edge.replace(/[()]/g, '').split(',').map(Number);
-          edges.push({ from, to });
+        // Créer les arêtes pour tous les graphes
+        graphData.graphs.forEach(graph => {
+          graph.edges.forEach(edge => {
+            const [from, to] = edge.replace(/[()]/g, '').split(',').map(Number);
+            edges.push({ from, to });
+          });
         });
         
         console.log(`Données du graphe ${graphType}:`, { nodes, edges });
@@ -237,10 +311,16 @@ export async function initializeGallery() {
         const graphType = button.dataset.graph;
         const graphData = TYPICAL_GRAPHS[graphType];
         if (graphData) {
-          const edgeList = `[${graphData.edges.join(', ')}]`;
-          navigator.clipboard.writeText(edgeList)
+          // Générer les listes d'arêtes pour chaque graphe
+          const edgeLists = graphData.graphs.map(graph => {
+            return `[${graph.edges.join(', ')}]`;
+          });
+
+          // Copier toutes les listes dans le presse-papiers
+          const textToCopy = edgeLists.join('\n\n');
+          navigator.clipboard.writeText(textToCopy)
             .then(() => {
-              UI.updateStatus(`Graphe ${graphData.name} copié dans le presse-papiers !`, "success");
+              UI.updateStatus(`${edgeLists.length} graphe(s) copié(s) dans le presse-papiers !`, "success");
             })
             .catch(err => {
               console.error('Erreur lors de la copie :', err);
