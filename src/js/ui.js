@@ -7,6 +7,7 @@ import {
   unhighlightAll,
   highlightGraphEdge,
   unhighlightGraphEdge,
+  getNodeGraph
 } from "./graph.js";
 
 // --- DOM Elements ---
@@ -131,7 +132,8 @@ export function updateInfoPanelContent() {
                 titleAttr += label === 1 ? " - Connected" : " - Not Connected";
               } else {
                 const label = labels.get(tupleId);
-                if (label !== undefined) {
+                
+                if (label !== undefined && getNodeGraph(rowId) === getNodeGraph(colId)) {
                   const uniqueLabels = [...new Set(labels.values())];
                   const colorMap = generateColorMap(
                     uniqueLabels.sort((a, b) => a - b)

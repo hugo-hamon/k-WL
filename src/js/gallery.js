@@ -160,11 +160,6 @@ export async function initializeGallery() {
             hover: true,
             zoomView: true,
             dragView: true,
-            mouseWheel: {
-              enabled: true,
-              speed: 0.5,
-              zoomAtCursor: true
-            }
           },
           layout: {
             improvedLayout: true,

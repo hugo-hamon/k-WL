@@ -8,6 +8,7 @@ export let graphData = {
   edges: new vis.DataSet(),
 };
 let nodeDegrees = new Map();
+let nodeGraphMap = new Map();
 
 // Highlighted edges (2-FWL)
 let highlightedEdgeInfo = null;
@@ -24,6 +25,7 @@ export function generateRandomGraph(size, density = 0.3) {
 
   graphData.nodes.clear();
   graphData.edges.clear();
+  nodeGraphMap.clear();
 
   const numNodes = size;
 
@@ -36,6 +38,7 @@ export function generateRandomGraph(size, density = 0.3) {
       font: { size: 12, color: "#000000" },
       color: { background: "#D2E5FF", border: "#2B7CE9" },
     });
+    nodeGraphMap.set(i, 0);
   }
 
   for (let i = 1; i <= numNodes; i++) {
@@ -121,6 +124,7 @@ export function generateGraphFromEdgeList(edgeListString) {
   graphData.nodes.clear();
   graphData.edges.clear();
   nodeDegrees.clear();
+  nodeGraphMap.clear();
 
   const uniqueNodeIds = new Set();
   const edgesToAdd = [];
@@ -128,6 +132,7 @@ export function generateGraphFromEdgeList(edgeListString) {
 
   const previous_graph_nodes = new Set();
   let current_graph_nodes = new Set();
+  let current_graph_index = 0;
 
   // 1. Normalize the input: flatten and remove line breaks, excess whitespace
   const flatInput = edgeListString.replace(/\s+/g, "");
@@ -146,11 +151,23 @@ export function generateGraphFromEdgeList(edgeListString) {
     const tupleMatches = [...block.matchAll(/\((\d+),(\d*)\)/g)];
 
     tupleMatches.forEach((match) => {
-      const u = parseInt(match[1], 10) + previous_graph_nodes.size;
-      const v = match[2]
-        ? parseInt(match[2], 10) + previous_graph_nodes.size
-        : null;
-
+      let to_add = false;
+      if (parseInt(match[1], 10) < previous_graph_nodes.size) {
+        to_add = true;
+      }
+      if (match[2] && parseInt(match[2], 10) < previous_graph_nodes.size) {
+        to_add = true;
+      }
+      let u, v;
+      if (to_add) {
+        u = parseInt(match[1], 10) + previous_graph_nodes.size;
+        v = match[2]
+          ? parseInt(match[2], 10) + previous_graph_nodes.size
+          : null;
+      } else {
+        u = parseInt(match[1], 10);
+        v = match[2] ? parseInt(match[2], 10) : null;
+      }
       current_graph_nodes.add(u);
       if (v !== null) current_graph_nodes.add(v);
 
@@ -161,11 +178,18 @@ export function generateGraphFromEdgeList(edgeListString) {
       }
     });
 
+    current_graph_nodes.forEach(node => {
+      if (!nodeGraphMap.has(node)) {
+        nodeGraphMap.set(node, current_graph_index);
+      }
+    });
+
     // Push current to previous for next block
     for (const node of current_graph_nodes) {
       previous_graph_nodes.add(node);
     }
     current_graph_nodes.clear();
+    current_graph_index++;
   });
 
   if (uniqueNodeIds.size === 0 && errorCount === lines.length) {
@@ -506,4 +530,19 @@ export function getGraphData() {
 
 export function getNodeDegrees() {
   return nodeDegrees;
+}
+
+export function getNodeGraph(nodeId) {
+  return nodeGraphMap.get(nodeId);
+}
+
+// Ajouter une fonction pour obtenir tous les nœuds d'un graphe
+export function getGraphNodes(graphIndex) {
+  const nodes = [];
+  nodeGraphMap.forEach((graphId, nodeId) => {
+    if (graphId === graphIndex) {
+      nodes.push(nodeId);
+    }
+  });
+  return nodes;
 }

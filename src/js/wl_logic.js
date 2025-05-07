@@ -1,4 +1,5 @@
 import { tupleToId, areNodesConnected, generateKTuples } from "./utils.js";
+import { getNodeGraph} from "./graph.js";
 
 export let wlState = null;
 
@@ -285,6 +286,10 @@ function run2WLIteration(nodesDataSet) {
 
   currentTupleIds.forEach((tupleId) => {
     const tuple = tupleId.split("_").map(Number);
+    let [u, v] = tuple;
+    if (getNodeGraph(u) !== getNodeGraph(v)) {
+      return;
+    }
     const signature = compute2WLSignature(tuple, currentLabels, allNodeIds);
     signaturesThisIteration.set(tupleId, signature);
   });
