@@ -55,6 +55,9 @@ def process_config_path(config_path: str) -> str:
 
 
 if __name__ == "__main__":
+    if not os.path.exists("log"):
+        os.makedirs("log")
+
     logger = logging.getLogger(__name__)
     logging.basicConfig(**LOGGING_CONFIG)
     logger.info("Starting run.py")

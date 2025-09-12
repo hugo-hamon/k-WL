@@ -3,9 +3,15 @@ from dacite.core import from_dict
 import toml
 
 
+
+@dataclass
+class EEL:
+    open_browser_on_start: bool
+
+
 @dataclass
 class Config:
-    pass
+    eel: EEL
 
 
 def load_config(config_path: str) -> Config:
