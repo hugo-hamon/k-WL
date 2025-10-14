@@ -44,6 +44,13 @@ class App:
         
         self.logger.info("Graph generated successfully")
 
+    def eel_get_graphs(self) -> list[str]:
+        """Get the current graphs"""
+        list_nodes = [list(graph.nodes()) for graph in self.graphs]
+        list_edges = [list(graph.edges()) for graph in self.graphs]
+        
+        return [{"nodes": nodes, "edges": edges} for nodes, edges in zip(list_nodes, list_edges)]
+
 
     def expose_functions(self) -> None:
         """Expose functions to JavaScript"""
