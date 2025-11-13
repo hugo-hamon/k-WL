@@ -35,22 +35,29 @@ class App:
             graph_size = int(graph_size)
             graph_density = float(graph_density)
         except ValueError:
-            log_error(f"Invalid graph size or density: {graph_size} or {graph_density}", self.logger)
+            log_error(
+                f"Invalid graph size or density: {graph_size} or {graph_density}",
+                self.logger,
+            )
 
-        self.logger.info(f"Generating random graph with size {graph_size} and density {graph_density}")
+        self.logger.info(
+            f"Generating random graph with size {graph_size} and density {graph_density}"
+        )
 
         new_graph = generate_random_graph(graph_size, graph_density)
         self.graphs = [new_graph]
-        
+
         self.logger.info("Graph generated successfully")
 
     def eel_get_graphs(self) -> list[str]:
         """Get the current graphs"""
         list_nodes = [list(graph.nodes()) for graph in self.graphs]
         list_edges = [list(graph.edges()) for graph in self.graphs]
-        
-        return [{"nodes": nodes, "edges": edges} for nodes, edges in zip(list_nodes, list_edges)]
 
+        return [
+            {"nodes": nodes, "edges": edges}
+            for nodes, edges in zip(list_nodes, list_edges)
+        ]
 
     def expose_functions(self) -> None:
         """Expose functions to JavaScript"""
