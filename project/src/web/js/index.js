@@ -5,6 +5,8 @@ class GraphVisualizer {
         this.config = config;
         this.selectedNodeId = null;
         this.network = null;
+        this.physicsEnabled = true;
+        this.wlIteration = 0;
 
         this.generateButton = document.getElementById(
             config.selectors.generateButtonId,
@@ -19,6 +21,11 @@ class GraphVisualizer {
         this.networkContainer = document.getElementById(
             config.selectors.networkContainerId,
         );
+        this.loadGraphButton = document.getElementById(config.selectors.loadGraphButtonId);
+        this.edgeListInput = document.getElementById(config.selectors.edgeListInputId);
+        this.saveGraphClipboardButton = document.getElementById(config.selectors.saveGraphClipboardButtonId);
+        this.togglePhysicsButton = document.getElementById(config.selectors.togglePhysicsButtonId);
+        this.infoPanelContent = document.getElementById(config.selectors.infoPanelContentId);
 
         this.handleNodeSelection = this.handleNodeSelection.bind(this);
         this.handleNodeDeselection = this.handleNodeDeselection.bind(this);
@@ -39,6 +46,15 @@ class GraphVisualizer {
         this.generateButton.addEventListener("click", () => {
             this.generateRandomGraph();
         });
+        this.loadGraphButton.addEventListener("click", () => {
+            this.loadGraphFromList();
+        });
+        this.saveGraphClipboardButton.addEventListener("click", () => {
+            this.saveGraphToClipboard();
+        });
+        this.togglePhysicsButton.addEventListener("click", () => {
+            this.togglePhysics();
+        });
     }
 
     getGraphParameters() {
@@ -52,12 +68,49 @@ class GraphVisualizer {
         const { size, density } = this.getGraphParameters();
 
         await eel.eel_generate_random_graph(size, density)();
-        const graphs = await eel.eel_get_graphs()();
+        const graph = await eel.eel_get_graph()();
 
-        if (Array.isArray(graphs) && graphs.length > 0) {
-            this.displayGraph(graphs[0]);
+        if (Array.isArray(graph) && graph.length > 0) {
+            this.displayGraph(graph);
         } else if (this.statusInfo) {
             this.statusInfo.textContent = "Status: Aucun graphe généré.";
+        }
+    }
+
+    async saveGraphToClipboard() {
+        const graph = await eel.eel_get_graph()();
+        // Make a single string as [(x,y), (x,y), ...]
+        let string = "[";
+        let edges = [];
+
+        // Build the string
+        for (const object of graph) {
+            for (const edge of object.edges) {
+                if (!edges.includes(edge) && !edges.includes([edge[1], edge[0]])) {
+                    string += `(${edge[0]},${edge[1]}), `;
+                    edges.push(edge);
+                }
+            }
+        }
+        // Remove the last comma and add the closing bracket
+        string = string.slice(0, -2);
+        string += "]";
+        
+        navigator.clipboard.writeText(string);
+        if (this.statusInfo) {
+            this.statusInfo.textContent = "Status: Graphe sauvegardé dans le presse-papiers.";
+        }
+    }
+
+    async loadGraphFromList() {
+        const graphList = this.edgeListInput.value;
+        await eel.eel_load_graph_from_list(graphList)();
+        const graph = await eel.eel_get_graph()();
+
+        if (Array.isArray(graph) && graph.length > 0) {
+            this.displayGraph(graph);
+        } else if (this.statusInfo) {
+            this.statusInfo.textContent = "Status: Aucun graphe chargé.";
         }
     }
 
@@ -67,11 +120,11 @@ class GraphVisualizer {
         const nodeConfig = this.config.nodes;
         const edgeConfig = this.config.edges;
 
-        if (Array.isArray(graphData?.nodes)) {
-            graphData.nodes.forEach((_, index) => {
+        if (Array.isArray(graphData)) {
+            graphData.forEach((object) => {
                 nodes.add({
-                    id: index,
-                    label: index.toString(),
+                    id: object.nodes,
+                    label: object.nodes.toString(),
                     shape: nodeConfig.shape,
                     size: nodeConfig.size,
                     font: { ...nodeConfig.font },
@@ -83,13 +136,15 @@ class GraphVisualizer {
 
         const defaultEdgeColor = edgeConfig.color?.color || "#000000";
 
-        if (Array.isArray(graphData?.edges)) {
-            graphData.edges.forEach(([from, to]) => {
-                edges.add({
-                    from,
-                    to,
-                    width: edgeConfig.width,
-                    color: { color: defaultEdgeColor },
+        if (Array.isArray(graphData)) {
+            graphData.forEach((object) => {
+                object.edges.forEach((edge) => {
+                    edges.add({
+                        from: edge[0],
+                        to: edge[1],
+                        width: edgeConfig.width,
+                        color: { color: defaultEdgeColor },
+                    });
                 });
             });
         }
@@ -100,7 +155,10 @@ class GraphVisualizer {
     getNetworkOptions() {
         return {
             layout: { ...this.config.network.layout },
-            physics: { ...this.config.network.physics },
+            physics: {
+                ...this.config.network.physics,
+                enabled: this.physicsEnabled,
+            },
             interaction: { ...this.config.network.interaction },
             nodes: {
                 shape: this.config.nodes.shape,
@@ -151,14 +209,19 @@ class GraphVisualizer {
         this.network.on("selectNode", this.handleNodeSelection);
         this.network.on("deselectNode", this.handleNodeDeselection);
         this.network.on("click", this.handleNetworkClick);
+
+        // Mettre à jour le texte du bouton pour refléter l'état actuel
+        if (this.togglePhysicsButton) {
+            this.togglePhysicsButton.textContent = this.physicsEnabled
+                ? "Désactiver la physique"
+                : "Activer la physique";
+        }
     }
 
     handleNodeSelection(params) {
         if (params.nodes.length > 0) {
             this.selectedNodeId = params.nodes[0];
-            if (typeof updateInfoPanelContent === "function") {
-                updateInfoPanelContent();
-            }
+            this.updateInfoPanelContent();
             if (typeof highlightSelection === "function") {
                 highlightSelection(this.selectedNodeId);
             }
@@ -167,16 +230,33 @@ class GraphVisualizer {
         }
     }
 
+
+
     handleNodeDeselection() {
         this.selectedNodeId = null;
-        if (typeof clearInfoPanel === "function") {
-            clearInfoPanel();
-        }
-        if (typeof updateInfoPanelContent === "function") {
-            updateInfoPanelContent();
-        }
+        this.clearInfoPanelContent();
+        this.updateInfoPanelContent();
         if (typeof unhighlightAll === "function") {
             unhighlightAll();
+        }
+    }
+
+    clearInfoPanelContent() {
+        this.infoPanelContent.textContent = "Select a node to see details.";
+    }
+
+    updateInfoPanelContent() {
+        if (this.selectedNodeId !== null) {
+            const nodeId = this.selectedNodeId;
+            this.infoPanelContent.innerHTML = `<h3>Node: ${nodeId} (Iteration ${this.wlIteration})</h3>`;
+            this.infoPanelContent.innerHTML += `<p>Current WL Label: </p>`
+            this.infoPanelContent.innerHTML += `<hr/>`
+            this.infoPanelContent.innerHTML += `<h3>Previous Iteration (${this.wlIteration - 1}):</h3>`
+            this.infoPanelContent.innerHTML += `<p>Previous WL Label: </p>`
+            this.infoPanelContent.innerHTML += `<p>Previous Neighbors Labels: </p>`
+            this.infoPanelContent.innerHTML += `Signature Computed: </p>`
+            this.infoPanelContent.innerHTML += `<hr/>`
+            this.infoPanelContent.innerHTML += `<h3>Neighbors (): </h3>`
         }
     }
 
@@ -184,6 +264,40 @@ class GraphVisualizer {
         if (params.nodes.length === 0 && params.edges.length === 0) {
             if (typeof unhighlightGraphEdge === "function") {
                 unhighlightGraphEdge();
+            }
+        }
+    }
+
+    togglePhysics() {
+        if (!this.network) {
+            return;
+        }
+
+        // Inverser l'état de la physique
+        this.physicsEnabled = !this.physicsEnabled;
+
+        this.network.setOptions({
+            physics: {
+                enabled: this.physicsEnabled,
+            },
+        });
+
+        // Mettre à jour le texte du bouton
+        if (this.togglePhysicsButton) {
+            this.togglePhysicsButton.textContent = this.physicsEnabled
+                ? "Désactiver la physique"
+                : "Activer la physique";
+        }
+
+        // Si on active la physique, stabiliser le réseau
+        if (this.physicsEnabled) {
+            this.network.stabilize();
+            if (this.statusInfo) {
+                this.statusInfo.textContent = "Status: Stabilisation en cours...";
+            }
+        } else {
+            if (this.statusInfo) {
+                this.statusInfo.textContent = "Status: Physique désactivée";
             }
         }
     }
@@ -202,5 +316,8 @@ if (document.readyState === "loading") {
 } else {
     graphVisualizerInstance = initializeGraphVisualizer();
 }
+
+// Generate a random graph on load
+graphVisualizerInstance.generateRandomGraph();
 
 export { GraphVisualizer, graphVisualizerInstance };

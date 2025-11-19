@@ -5,6 +5,11 @@ export const GRAPH_VISUALIZATION_CONFIG = {
     graphDensityInputId: "graph-density",
     statusInfoId: "status-info",
     networkContainerId: "graph-network",
+    loadGraphButtonId: "load-graph-btn",
+    edgeListInputId: "edge-list-input",
+    saveGraphClipboardButtonId: "save-graph-clipboard-btn",
+    togglePhysicsButtonId: "toggle-physics-btn",
+    infoPanelContentId: "info-content",
   },
   nodes: {
     shape: "dot",
@@ -39,7 +44,7 @@ export const GRAPH_VISUALIZATION_CONFIG = {
   network: {
     layout: {},
     physics: {
-      enabled: false,
+      enabled: true,
       stabilization: {
         iterations: 200,
         updateInterval: 100,
