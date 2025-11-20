@@ -4,12 +4,15 @@ class GraphVisualizer {
     constructor(config) {
         this.config = config;
         this.selectedNodeId = null;
-        this.graphInstance = null; 
-        this.is3D = true; // On commence en 3D par défaut
-        this.isPhysicsFrozen = false; // État de la physique
-        this.currentGraphData = { nodes: [], links: [] }; // Mémoire tampon des données
+        this.graphInstance = null;
+        this.is3D = false;
+        this.isPhysicsFrozen = false;
+        this.currentGraphData = { nodes: [], links: []};
+        this.colors = [];
+        this.colorsMap = new Map();
+        this.wlIteration = 0;
 
-        // --- Récupération des éléments DOM ---
+        // --- Get DOM elements ---
         this.generateButton = document.getElementById(config.selectors.generateButtonId);
         this.graphSizeInput = document.getElementById(config.selectors.graphSizeInputId);
         this.graphDensityInput = document.getElementById(config.selectors.graphDensityInputId);
@@ -18,11 +21,10 @@ class GraphVisualizer {
         this.loadGraphButton = document.getElementById(config.selectors.loadGraphButtonId);
         this.edgeListInput = document.getElementById(config.selectors.edgeListInputId);
         this.saveGraphClipboardButton = document.getElementById(config.selectors.saveGraphClipboardButtonId);
-        
-        // Nouveaux / Modifiés
+
         this.togglePhysicsButton = document.getElementById(config.selectors.togglePhysicsButtonId);
         this.toggleModeButton = document.getElementById(config.selectors.toggleModeButtonId);
-        
+
         this.infoPanelContent = document.getElementById(config.selectors.infoPanelContentId);
 
         // Bindings
@@ -33,94 +35,101 @@ class GraphVisualizer {
         this.generateButton.addEventListener("click", () => this.generateRandomGraph());
         this.loadGraphButton.addEventListener("click", () => this.loadGraphFromList());
         this.saveGraphClipboardButton.addEventListener("click", () => this.saveGraphToClipboard());
-        
+
         this.togglePhysicsButton.addEventListener("click", () => this.togglePhysics());
-        this.toggleModeButton.addEventListener("click", () => this.toggleMode()); // Nouveau listener
+        this.toggleModeButton.addEventListener("click", () => this.toggleMode());
 
         // Initialisation
         this.initGraph();
     }
 
-    // Initialise ou Ré-initialise le moteur de graphe (2D ou 3D)
+    // --- Init or Re-init the graph engine (2D or 3D)
     initGraph() {
-        // 1. Nettoyer le conteneur précédent (supprime le canvas existant)
+        // 1. Clean the previous container (remove the existing canvas)
         this.networkContainer.innerHTML = '';
 
-        // 2. Instancier la bonne librairie
+        // 2. Instantiate the good library
         if (this.is3D) {
             this.graphInstance = ForceGraph3D()(this.networkContainer)
                 .backgroundColor(this.config.graph3d.backgroundColor)
-                .nodeLabel('id')
+                .nodeLabel(node => String(node.id))
                 .nodeResolution(16)
                 .nodeVal(6)
                 .onNodeClick(this.handleNodeClick)
                 .onBackgroundClick(this.handleBackgroundClick)
                 .linkWidth(this.config.graph3d.linkWidth);
-                
-            this.toggleModeButton.textContent = "Passer en 2D";
+
+            this.toggleModeButton.textContent = "Switch to 2D";
         } else {
             this.graphInstance = ForceGraph()(this.networkContainer)
                 .backgroundColor(this.config.graph2d.backgroundColor)
-                .nodeLabel('id')
+                .nodeLabel(() => '')
                 .nodeRelSize(6)
                 .onNodeClick(this.handleNodeClick)
                 .onBackgroundClick(this.handleBackgroundClick)
-                .linkWidth(this.config.graph2d.linkWidth);
+                .linkWidth(this.config.graph2d.linkWidth)
+                .nodeCanvasObjectMode(() => 'after')
+                .nodeCanvasObject((node, ctx, globalScale) => this.render2DNodeLabel(node, ctx, globalScale));
 
-            this.toggleModeButton.textContent = "Passer en 3D";
+            this.toggleModeButton.textContent = "Switch to 3D";
         }
 
-        // 3. Configuration commune (Couleurs dynamiques)
-        // On définit la couleur selon si c'est 2D ou 3D
-        const conf = this.is3D ? this.config.graph3d : this.config.graph2d;
-        
+        // 3. Common configuration (Like the colors...)
+        const determineNodeColor = (node) => {
+            if (node.id === this.selectedNodeId) {
+                return "white";
+            }
+            return this.getIntColor(this.colors[node.id]);
+        };
+
         this.graphInstance
             .width(this.networkContainer.clientWidth)
             .height(this.networkContainer.clientHeight)
-            .nodeColor(node => node.id === this.selectedNodeId ? conf.nodeSelectedColor : conf.nodeColor)
+            .nodeColor(determineNodeColor)
             .linkColor(() => this.is3D ? this.config.graph3d.linkColor : this.config.graph2d.linkColor)
-            
 
-        // Gestion du redimensionnement
+
+        // Resize management
         window.addEventListener('resize', () => {
-            if(this.graphInstance) {
+            if (this.graphInstance) {
                 this.graphInstance
                     .width(this.networkContainer.clientWidth)
                     .height(this.networkContainer.clientHeight);
             }
         });
 
-        // 4. Recharger les données s'il y en a
+        // 4. Reload the data if there is some
         if (this.currentGraphData.nodes.length > 0) {
             this.graphInstance.graphData(this.currentGraphData);
-            
-            // Si la physique était gelée, on la ré-applique
+
+            // If the physics was frozen, we apply it again
             if (this.isPhysicsFrozen) {
-                // Petit délai pour laisser le graphe s'initialiser avant de figer
-                setTimeout(() => this.applyFreeze(true), 500); 
+                // Small delay to let the graph initialize before freezing
+                setTimeout(() => this.applyFreeze(true), 500);
             }
         }
     }
 
-    // --- Logique de changement de mode ---
+    // --- Mode change logic ---
     toggleMode() {
-        this.is3D = !this.is3D; // Inverse le mode
-        this.initGraph(); // Reconstruit le graphe
+        this.is3D = !this.is3D;
+        // Rebuild the graph
+        this.initGraph();
     }
 
-    // --- Logique de Physique (Freeze / Unfreeze) ---
+    // --- Physics logic ---
     togglePhysics() {
         this.isPhysicsFrozen = !this.isPhysicsFrozen;
         this.applyFreeze(this.isPhysicsFrozen);
-        
-        // Mise à jour du texte bouton
-        this.togglePhysicsButton.textContent = this.isPhysicsFrozen 
-            ? "Libérer les nœuds" 
-            : "Figer les nœuds";
-            
+
+        // Update the button text
+        this.togglePhysicsButton.textContent = this.isPhysicsFrozen
+            ? "Release the nodes"
+            : "Freeze the nodes";
+
         if (this.statusInfo) {
-            this.statusInfo.textContent = this.isPhysicsFrozen 
-                ? "Status: Nodes Frozen (Drag enabled)" 
+            this.statusInfo.textContent = this.isPhysicsFrozen
+                ? "Status: Nodes Frozen (Drag enabled)"
                 : "Status: Physics Active";
         }
     }
@@ -129,28 +138,25 @@ class GraphVisualizer {
         if (!this.graphInstance) return;
 
         const { nodes } = this.graphInstance.graphData();
-        
+
         if (shouldFreeze) {
-            // On fixe chaque nœud à sa position actuelle
+            // Fix each node to its current position
             nodes.forEach(node => {
                 node.fx = node.x;
                 node.fy = node.y;
                 if (this.is3D) node.fz = node.z;
             });
         } else {
-            // On libère les nœuds (fx = null permet au moteur physique de reprendre le contrôle)
+            // Release the nodes
             nodes.forEach(node => {
                 node.fx = null;
                 node.fy = null;
                 if (this.is3D) node.fz = null;
             });
-            
-            // On réchauffe le moteur pour relancer le mouvement
-            this.graphInstance.d3AlphaTarget(0.3).restart(); 
         }
     }
 
-    // --- Appels Eel & Data ---
+    // --- Eel & Data calls ---
 
     async generateRandomGraph() {
         const { size, density } = this.getGraphParameters();
@@ -168,18 +174,18 @@ class GraphVisualizer {
         const graphRaw = await eel.eel_get_graph()();
         // Conversion
         const gData = this.convertGraphDictToForceData(graphRaw);
-        
-        // Mise à jour mémoire tampon
+
+        // Update the buffer
         this.currentGraphData = gData;
 
-        // Mise à jour visuelle
+        // Update the visual
         if (this.graphInstance) {
             this.graphInstance.graphData(gData);
-            
-            // Si on est en mode "Figé", on doit re-figer les nouveaux nœuds après une courte stabilisation
+
+            // If we are in "Frozen" mode, we must freeze the new nodes after a short stabilization
             if (this.isPhysicsFrozen) {
                 this.statusInfo.textContent = "Status: Stabilizing new graph...";
-                // On laisse bouger un peu (1s) pour que le graphe se déplie, puis on fige
+                // Let it move a bit (1s) to let the graph unfold, then freeze
                 setTimeout(() => {
                     this.applyFreeze(true);
                     this.statusInfo.textContent = "Status: Nodes Frozen";
@@ -190,21 +196,22 @@ class GraphVisualizer {
 
     convertGraphDictToForceData(graphData) {
         const nodes = [];
+        const colors = [];
         const links = [];
         const addedLinks = new Set();
         const addedNodes = new Set();
-        
+
         if (Array.isArray(graphData)) {
             graphData.forEach((object) => {
                 if (!addedNodes.has(object.nodes)) {
-                    nodes.push({ id: object.nodes });
+                    nodes.push({ id: object.nodes})
                     addedNodes.add(object.nodes);
                 }
-                
+
                 object.edges.forEach((edge) => {
                     const source = edge[0];
                     const target = edge[1];
-                    // Assurer que les noeuds existent (par sécurité)
+                    // Ensure that the nodes exist
                     if (!addedNodes.has(source)) { nodes.push({ id: source }); addedNodes.add(source); }
                     if (!addedNodes.has(target)) { nodes.push({ id: target }); addedNodes.add(target); }
 
@@ -216,6 +223,11 @@ class GraphVisualizer {
                 });
             });
         }
+        for (let i = 0; i < nodes.length; i++) {
+            colors.push(0);
+        }
+
+        this.colors = colors;
         return { nodes, links };
     }
 
@@ -223,35 +235,34 @@ class GraphVisualizer {
 
     handleNodeClick(node) {
         this.selectedNodeId = node.id;
-        
-        // Update couleur
-        const conf = this.is3D ? this.config.graph3d : this.config.graph2d;
-        this.graphInstance.nodeColor(n => n.id === this.selectedNodeId ? conf.nodeSelectedColor : conf.nodeColor);
-        
-        // Si 3D, on bouge la caméra
+
+        this.graphInstance.nodeColor(this.graphInstance.nodeColor());
+
+        // If 3D, move the camera
         if (this.is3D) {
-            const distance = 40;
-            const distRatio = 1 + distance/Math.hypot(node.x, node.y, node.z);
+            this.graphInstance.nodeColor(n => n.id === this.selectedNodeId ? this.getIntColor(n.id) : this.getIntColor(n.id));
+            const distance = 500;
+            const distRatio = 1 + distance / Math.hypot(node.x, node.y, node.z);
             this.graphInstance.cameraPosition(
-                { x: node.x * distRatio, y: node.y * distRatio, z: node.z * distRatio }, 
-                node, 
-                3000
+                { x: node.x * distRatio, y: node.y * distRatio, z: node.z * distRatio },
+                node,
+                500
             );
         } else {
-            // Si 2D, on peut centrer la vue (optionnel)
-            this.graphInstance.centerAt(node.x, node.y, 1000);
-            this.graphInstance.zoom(4, 2000);
+            // If 2D, center the view
+            this.graphInstance.centerAt(node.x, node.y, 500);
+            this.graphInstance.zoom(4, 500);
         }
-        
+
         this.updateInfoPanelContent();
     }
 
     handleBackgroundClick() {
         this.selectedNodeId = null;
-        // Reset couleurs
+        // Reset colors
         const conf = this.is3D ? this.config.graph3d : this.config.graph2d;
-        this.graphInstance.nodeColor(n => conf.nodeColor);
-        
+        this.graphInstance.nodeColor(this.graphInstance.nodeColor());
+
         this.clearInfoPanelContent();
     }
 
@@ -262,10 +273,9 @@ class GraphVisualizer {
             density: this.graphDensityInput.value,
         };
     }
-    
+
     async saveGraphToClipboard() {
         const graph = await eel.eel_get_graph()();
-        // Logique inchangée pour le formatage string...
         let string = "[";
         let edges = [];
         for (const object of graph) {
@@ -280,16 +290,59 @@ class GraphVisualizer {
         navigator.clipboard.writeText(string);
         if (this.statusInfo) this.statusInfo.textContent = "Status: Copied to clipboard.";
     }
-    
+
     clearInfoPanelContent() {
         this.infoPanelContent.textContent = "Select a node to see details.";
     }
 
     updateInfoPanelContent() {
         if (this.selectedNodeId !== null) {
-             this.infoPanelContent.innerHTML = `<h3>Node: ${this.selectedNodeId}</h3>`;
-             // ... Votre logique d'affichage WL
+            this.infoPanelContent.innerHTML = `<h3>Node: ${this.selectedNodeId}</h3>`;
+            this.infoPanelContent.innerHTML += `<p>Current WL Label: </p>`
+            this.infoPanelContent.innerHTML += `<hr/>`
+            this.infoPanelContent.innerHTML += `<h3>Previous Iteration (${this.wlIteration - 1}):</h3>`
+            this.infoPanelContent.innerHTML += `<p>Previous WL Label: </p>`
+            this.infoPanelContent.innerHTML += `<p>Previous Neighbors Labels: </p>`
+            this.infoPanelContent.innerHTML += `Signature Computed: </p>`
+            this.infoPanelContent.innerHTML += `<hr/>`
+            this.infoPanelContent.innerHTML += `<h3>Neighbors (): </h3>`
+            // Todo: Add WL information
         }
+    }
+
+    render2DNodeLabel(node, ctx, globalScale = 1) {
+        const label = node.id === undefined || node.id === null ? '' : String(node.id);
+        if (!label) return;
+
+        const fontSize = 6;
+        const verticalOffset = 8;
+
+        ctx.font = `${fontSize}px Sans-Serif`;
+        ctx.fillStyle = "black";
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'top';
+        ctx.fillText(label, node.x, node.y + verticalOffset);
+
+        if (node.id === this.selectedNodeId) {
+            // Add a border to the selected node
+            const conf = this.config.graph2d;
+            ctx.lineWidth = 3;
+            ctx.strokeStyle = this.getIntColor(node.id);
+            ctx.beginPath();
+            ctx.arc(node.x, node.y, 6, 0, 2 * Math.PI);
+            ctx.stroke();
+        }
+    }
+
+    getIntColor(index) {
+        if (index === undefined || index === null) return '#999';
+        if (this.colorsMap.has(index)) return this.colorsMap.get(index);
+
+        const hue = (index * 137.508) % 360;
+        const lightness = 50;
+        const newColor = `hsl(${hue}, 70%, ${lightness}%)`;
+        this.colorsMap.set(index, newColor);
+        return newColor;
     }
 }
 

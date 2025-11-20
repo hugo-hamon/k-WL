@@ -12,17 +12,6 @@
 
   <link href="css/index.css" rel="stylesheet" type="text/css" />
   <link rel="icon" type="image/x-icon" href="assets/favicon.ico" />
-
-  <style>
-    #graph-network {
-      overflow: hidden;
-      background: #000011;
-    }
-
-    #graph-network canvas {
-      outline: none;
-    }
-  </style>
 </head>
 
 <body>
@@ -40,13 +29,13 @@
 
       <div class="control-group wl-controls">
         <label for="k-value">k:</label>
-        <input type="number" id="k-value" value="2" min="1" max="2" />
+        <input type="number" id="k-value" value="1" min="1" max="2" />
         <button id="iterate-btn">Run WL Iteration</button>
       </div>
 
       <div class="control-group physics-group">
-        <button id="toggle-mode-btn">Passer en 2D</button>
-        <button id="toggle-physics-btn">Figer les nœuds</button>
+        <button id="toggle-mode-btn">Switch to 2D</button>
+        <button id="toggle-physics-btn">Freeze the nodes</button>
       </div>
 
       <div class="control-group status-group">

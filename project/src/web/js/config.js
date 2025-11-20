@@ -14,9 +14,9 @@ export const GRAPH_VISUALIZATION_CONFIG = {
   },
   // Configuration spécifique au rendu 3D
   graph3d: {
-    nodeColor:"rgb(137, 0, 201)",
-    nodeSelectedColor: "#ff3333",
-    nodeResolution: 16, // Qualité de la sphère
+    nodeColor:"rgb(174, 0, 255)",
+    nodeSelectedColor: "rgb(94, 0, 138)",
+    nodeResolution: 16,
     nodeSize: 6,
     linkColor: "rgb(10, 10, 10)",
     linkWidth: 2.0,
@@ -24,8 +24,8 @@ export const GRAPH_VISUALIZATION_CONFIG = {
   },
   graph2d: {
     backgroundColor: "#ffffff",
-    nodeColor: "rgb(137, 0, 201)",
-    nodeSelectedColor: "#ff3333",
+    nodeColor: "rgb(174, 0, 255)",
+    nodeSelectedColor: "rgb(94, 0, 138)",
     linkColor: "rgb(10, 10, 10)",
     linkWidth: 1,
   }
