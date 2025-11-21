@@ -1,4 +1,5 @@
 import { GRAPH_VISUALIZATION_CONFIG } from "./config.js";
+import { initializeGallery } from "./gallery.js";
 
 class GraphVisualizer {
     constructor(config) {
@@ -7,10 +8,11 @@ class GraphVisualizer {
         this.graphInstance = null;
         this.is3D = false;
         this.isPhysicsFrozen = false;
-        this.currentGraphData = { nodes: [], links: []};
-        this.colors = [];
+        this.currentGraphData = { nodes: [], links: [] };
+        this.colors = new Map();
         this.colorsMap = new Map();
         this.wlIteration = 0;
+        this.selectedNodeNeighbors = new Set();
 
         // --- Get DOM elements ---
         this.generateButton = document.getElementById(config.selectors.generateButtonId);
@@ -57,7 +59,8 @@ class GraphVisualizer {
                 .nodeVal(6)
                 .onNodeClick(this.handleNodeClick)
                 .onBackgroundClick(this.handleBackgroundClick)
-                .linkWidth(this.config.graph3d.linkWidth);
+                .linkWidth(this.config.graph3d.linkWidth)
+                
 
             this.toggleModeButton.textContent = "Switch to 2D";
         } else {
@@ -69,17 +72,18 @@ class GraphVisualizer {
                 .onBackgroundClick(this.handleBackgroundClick)
                 .linkWidth(this.config.graph2d.linkWidth)
                 .nodeCanvasObjectMode(() => 'after')
-                .nodeCanvasObject((node, ctx, globalScale) => this.render2DNodeLabel(node, ctx, globalScale));
+                .nodeCanvasObject((node, ctx, globalScale) => this.render2DNodeVisuals(node, ctx, globalScale));
 
             this.toggleModeButton.textContent = "Switch to 3D";
         }
 
         // 3. Common configuration (Like the colors...)
         const determineNodeColor = (node) => {
+            let basedColor = this.getIntColor(this.colors.get(node.id));
             if (node.id === this.selectedNodeId) {
-                return "white";
+                return `hsl(215, 100%, 91%)`;
             }
-            return this.getIntColor(this.colors[node.id]);
+            return basedColor;
         };
 
         this.graphInstance
@@ -87,6 +91,7 @@ class GraphVisualizer {
             .height(this.networkContainer.clientHeight)
             .nodeColor(determineNodeColor)
             .linkColor(() => this.is3D ? this.config.graph3d.linkColor : this.config.graph2d.linkColor)
+            .linkCurvature(0.1);
 
 
         // Resize management
@@ -113,6 +118,10 @@ class GraphVisualizer {
     // --- Mode change logic ---
     toggleMode() {
         this.is3D = !this.is3D;
+        this.selectedNodeNeighbors.clear();
+        this.selectedNodeId = null;
+        this.refreshNodeStyles();
+        this.clearInfoPanelContent();
         // Rebuild the graph
         this.initGraph();
     }
@@ -177,6 +186,7 @@ class GraphVisualizer {
 
         // Update the buffer
         this.currentGraphData = gData;
+        this.updateSelectedNodeNeighbors();
 
         // Update the visual
         if (this.graphInstance) {
@@ -196,7 +206,7 @@ class GraphVisualizer {
 
     convertGraphDictToForceData(graphData) {
         const nodes = [];
-        const colors = [];
+        const colors = new Map();
         const links = [];
         const addedLinks = new Set();
         const addedNodes = new Set();
@@ -204,7 +214,7 @@ class GraphVisualizer {
         if (Array.isArray(graphData)) {
             graphData.forEach((object) => {
                 if (!addedNodes.has(object.nodes)) {
-                    nodes.push({ id: object.nodes})
+                    nodes.push({ id: object.nodes })
                     addedNodes.add(object.nodes);
                 }
 
@@ -223,8 +233,8 @@ class GraphVisualizer {
                 });
             });
         }
-        for (let i = 0; i < nodes.length; i++) {
-            colors.push(0);
+        for (const node of nodes) {
+            colors.set(node.id, 0);
         }
 
         this.colors = colors;
@@ -235,12 +245,13 @@ class GraphVisualizer {
 
     handleNodeClick(node) {
         this.selectedNodeId = node.id;
+        this.updateSelectedNodeNeighbors();
 
-        this.graphInstance.nodeColor(this.graphInstance.nodeColor());
+        this.refreshNodeStyles();
 
         // If 3D, move the camera
         if (this.is3D) {
-            this.graphInstance.nodeColor(n => n.id === this.selectedNodeId ? this.getIntColor(n.id) : this.getIntColor(n.id));
+            this.graphInstance.nodeColor(n => n.id === this.selectedNodeId ? this.getIntColor(this.colors.get(n.id)) : this.getIntColor(this.colors.get(n.id)));
             const distance = 500;
             const distRatio = 1 + distance / Math.hypot(node.x, node.y, node.z);
             this.graphInstance.cameraPosition(
@@ -259,9 +270,10 @@ class GraphVisualizer {
 
     handleBackgroundClick() {
         this.selectedNodeId = null;
+        this.selectedNodeNeighbors.clear();
         // Reset colors
         const conf = this.is3D ? this.config.graph3d : this.config.graph2d;
-        this.graphInstance.nodeColor(this.graphInstance.nodeColor());
+        this.refreshNodeStyles();
 
         this.clearInfoPanelContent();
     }
@@ -277,16 +289,28 @@ class GraphVisualizer {
     async saveGraphToClipboard() {
         const graph = await eel.eel_get_graph()();
         let string = "[";
-        let edges = [];
+        const seenEdges = new Set(); 
+
         for (const object of graph) {
             for (const edge of object.edges) {
-                if (!edges.includes(edge) && !edges.includes([edge[1], edge[0]])) {
-                    string += `(${edge[0]},${edge[1]}), `;
-                    edges.push(edge);
+                const u = edge[0];
+                const v = edge[1];
+
+                const key = u < v ? `${u}-${v}` : `${v}-${u}`;
+
+                if (!seenEdges.has(key)) {
+                    seenEdges.add(key);
+                    string += `(${u}, ${v}), `;
                 }
             }
         }
-        string = string.slice(0, -2) + "]";
+
+        if (seenEdges.size > 0) {
+            string = string.slice(0, -2);
+        }
+        string += "]";
+
+        console.log(string);
         navigator.clipboard.writeText(string);
         if (this.statusInfo) this.statusInfo.textContent = "Status: Copied to clipboard.";
     }
@@ -310,39 +334,74 @@ class GraphVisualizer {
         }
     }
 
-    render2DNodeLabel(node, ctx, globalScale = 1) {
+    render2DNodeVisuals(node, ctx, globalScale = 1) {
         const label = node.id === undefined || node.id === null ? '' : String(node.id);
-        if (!label) return;
+        const radius = 6;
+        const isSelected = node.id === this.selectedNodeId;
+        const isNeighbor = this.selectedNodeNeighbors.has(node.id);
+        const baseStrokeWidth = isSelected ? 2 : isNeighbor ? 1 : 0.5;
+        const strokeColor = isNeighbor ? "rgba(255,0,0,1.0)" : "black";
 
-        const fontSize = 6;
-        const verticalOffset = 8;
+        ctx.save();
 
-        ctx.font = `${fontSize}px Sans-Serif`;
-        ctx.fillStyle = "black";
-        ctx.textAlign = 'center';
-        ctx.textBaseline = 'top';
-        ctx.fillText(label, node.x, node.y + verticalOffset);
+        ctx.lineWidth = baseStrokeWidth;
+        ctx.strokeStyle = isSelected ? `hsl(214, 81%, 54%)` : strokeColor;
+        ctx.beginPath();
+        ctx.arc(node.x, node.y, radius, 0, 2 * Math.PI);
+        ctx.stroke();
 
-        if (node.id === this.selectedNodeId) {
-            // Add a border to the selected node
-            const conf = this.config.graph2d;
-            ctx.lineWidth = 3;
-            ctx.strokeStyle = this.getIntColor(node.id);
-            ctx.beginPath();
-            ctx.arc(node.x, node.y, 6, 0, 2 * Math.PI);
-            ctx.stroke();
+        if (label) {
+            const fontSize = 6;
+            const verticalOffset = 8;
+
+            ctx.font = `${fontSize}px Sans-Serif`;
+            ctx.fillStyle = "rgba(0, 0, 0, 1.0)";
+
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'top';
+
+            ctx.fillText(label, node.x, node.y + verticalOffset);
         }
+        ctx.restore();
     }
 
     getIntColor(index) {
+        console.log(index);
         if (index === undefined || index === null) return '#999';
         if (this.colorsMap.has(index)) return this.colorsMap.get(index);
 
+        // if (index === 0) return 'hsl(200, 100%, 60%)';
+
         const hue = (index * 137.508) % 360;
-        const lightness = 50;
-        const newColor = `hsl(${hue}, 70%, ${lightness}%)`;
+        const lightness = 80;
+        const saturation = 70;
+        const newColor = `hsl(${hue}, ${saturation}%, ${lightness}%)`;
         this.colorsMap.set(index, newColor);
         return newColor;
+    }
+
+    updateSelectedNodeNeighbors() {
+        this.selectedNodeNeighbors.clear();
+        if (this.selectedNodeId === null) return;
+
+        this.currentGraphData.links.forEach(link => {
+            const sourceId = typeof link.source === 'object' ? link.source.id ?? link.source.index : link.source;
+            const targetId = typeof link.target === 'object' ? link.target.id ?? link.target.index : link.target;
+
+            if (sourceId === this.selectedNodeId) {
+                this.selectedNodeNeighbors.add(targetId);
+            } else if (targetId === this.selectedNodeId) {
+                this.selectedNodeNeighbors.add(sourceId);
+            }
+        });
+    }
+
+    refreshNodeStyles() {
+        if (!this.graphInstance) return;
+        this.graphInstance.nodeColor(this.graphInstance.nodeColor());
+        if (!this.is3D && typeof this.graphInstance.refresh === "function") {
+            this.graphInstance.refresh();
+        }
     }
 }
 
@@ -355,6 +414,8 @@ let graphVisualizerInstance = null;
 document.addEventListener("DOMContentLoaded", () => {
     graphVisualizerInstance = initializeGraphVisualizer();
     graphVisualizerInstance.generateRandomGraph();
+
+    initializeGallery();
 });
 
 export { GraphVisualizer, graphVisualizerInstance };
