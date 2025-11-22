@@ -1,4 +1,4 @@
-from .utils.graph import generate_random_graph
+from .utils.graph import generate_random_graph, wl_1_iterative
 from .utils.message import log_error
 from .config import load_config
 import networkx as nx
@@ -120,6 +120,23 @@ class App:
             to_send.append({"nodes": node, "edges": edges})
 
         return to_send
+
+    def eel_wl_1_iterative(self, colors: list[tuple[int, int]]):
+        # convert list to dict as {node: color, node: color, ...}
+        colors_dict = {color[0]: color[1] for color in colors}
+
+        unique_graph = nx.Graph()
+        
+        # Keep the same node id as in G1
+        for graph in self.graphs:
+            for node in graph.nodes():
+                unique_graph.add_node(node)
+        for graph in self.graphs:
+            for edge in graph.edges():
+                unique_graph.add_edge(edge[0], edge[1])
+
+        new_colors = wl_1_iterative(unique_graph, colors_dict)
+        return new_colors
 
     def expose_functions(self) -> None:
         """Expose functions to JavaScript"""

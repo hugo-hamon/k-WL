@@ -9,6 +9,7 @@ class GraphVisualizer {
         this.is3D = false;
         this.isPhysicsFrozen = false;
         this.currentGraphData = { nodes: [], links: [] };
+        this.previousWLColors = new Map();
         this.colors = new Map();
         this.colorsMap = new Map();
         this.wlIteration = 0;
@@ -23,6 +24,8 @@ class GraphVisualizer {
         this.loadGraphButton = document.getElementById(config.selectors.loadGraphButtonId);
         this.edgeListInput = document.getElementById(config.selectors.edgeListInputId);
         this.saveGraphClipboardButton = document.getElementById(config.selectors.saveGraphClipboardButtonId);
+        this.iterateButton = document.getElementById(config.selectors.iterateButtonId);
+        this.kValueInput = document.getElementById(config.selectors.kValueInputId);
 
         this.togglePhysicsButton = document.getElementById(config.selectors.togglePhysicsButtonId);
         this.toggleModeButton = document.getElementById(config.selectors.toggleModeButtonId);
@@ -37,6 +40,7 @@ class GraphVisualizer {
         this.generateButton.addEventListener("click", () => this.generateRandomGraph());
         this.loadGraphButton.addEventListener("click", () => this.loadGraphFromList());
         this.saveGraphClipboardButton.addEventListener("click", () => this.saveGraphToClipboard());
+        this.iterateButton.addEventListener("click", () => this.iterateWL());
 
         this.togglePhysicsButton.addEventListener("click", () => this.togglePhysics());
         this.toggleModeButton.addEventListener("click", () => this.toggleMode());
@@ -166,6 +170,29 @@ class GraphVisualizer {
     }
 
     // --- Eel & Data calls ---
+    async iterateWL() {
+        const k = parseInt(this.kValueInput.value);
+        // Get new colors for each node
+        if (k === 1) {
+            // convert dict to list as [(node, color), (node, color), ...]
+            this.previousWLColors = new Map(this.colors);
+            const colorsList = Array.from(this.colors.entries()).map(([node, color]) => [node, color]);
+            let newColors = await eel.eel_wl_1_iterative(colorsList)();
+            newColors = new Map(Object.entries(newColors));
+            newColors = new Map(Array.from(newColors.entries()).map(([key, value]) => [parseInt(key), value]));
+
+            // Update colors for each node
+            this.colors = newColors;
+
+            // Increment iteration counter
+            this.wlIteration++;
+    
+            // Refresh the visual display
+            this.refreshNodeStyles();
+
+            this.updateInfoPanelContent();
+        }
+    }
 
     async generateRandomGraph() {
         const { size, density } = this.getGraphParameters();
@@ -242,7 +269,6 @@ class GraphVisualizer {
     }
 
     // --- Interactions ---
-
     handleNodeClick(node) {
         this.selectedNodeId = node.id;
         this.updateSelectedNodeNeighbors();
@@ -310,7 +336,6 @@ class GraphVisualizer {
         }
         string += "]";
 
-        console.log(string);
         navigator.clipboard.writeText(string);
         if (this.statusInfo) this.statusInfo.textContent = "Status: Copied to clipboard.";
     }
@@ -320,17 +345,43 @@ class GraphVisualizer {
     }
 
     updateInfoPanelContent() {
-        if (this.selectedNodeId !== null) {
+        if (this.selectedNodeId !== null && this.wlIteration > 0) {
             this.infoPanelContent.innerHTML = `<h3>Node: ${this.selectedNodeId}</h3>`;
-            this.infoPanelContent.innerHTML += `<p>Current WL Label: </p>`
+            this.infoPanelContent.innerHTML += `<p>Current WL Label: ${this.colors.get(this.selectedNodeId)}</p>`
             this.infoPanelContent.innerHTML += `<hr/>`
             this.infoPanelContent.innerHTML += `<h3>Previous Iteration (${this.wlIteration - 1}):</h3>`
-            this.infoPanelContent.innerHTML += `<p>Previous WL Label: </p>`
-            this.infoPanelContent.innerHTML += `<p>Previous Neighbors Labels: </p>`
-            this.infoPanelContent.innerHTML += `Signature Computed: </p>`
+            this.infoPanelContent.innerHTML += `<p>Previous WL Label: ${this.previousWLColors.get(this.selectedNodeId)}</p>`
+            let previousNeighborsLabels = "";
+            for (const neighbor of this.selectedNodeNeighbors) {
+                previousNeighborsLabels += `${this.previousWLColors.get(neighbor)}, `;
+            }
+            previousNeighborsLabels = previousNeighborsLabels.slice(0, -2);
+            this.infoPanelContent.innerHTML += `<p>Previous Neighbors Labels: ${previousNeighborsLabels}</p>`
+
+            // Signature = WL_label(node) | WL_label(neighbors[0]),WL_label(neighbors[1]),...
+            let neighborsLabels = [];
+            for (const neighbor of this.selectedNodeNeighbors) {
+                neighborsLabels.push(parseInt(this.previousWLColors.get(neighbor)));
+            }
+            neighborsLabels.sort((a, b) => a - b);
+            let signature = "";
+            signature += `${this.previousWLColors.get(this.selectedNodeId)}|`;
+            for (const neighbor of neighborsLabels) {
+                signature += `${neighbor},`;
+            }
+            signature = signature.slice(0, -1);
+            this.infoPanelContent.innerHTML += `<p>Signature Computed: ${signature}</p>`
+
             this.infoPanelContent.innerHTML += `<hr/>`
-            this.infoPanelContent.innerHTML += `<h3>Neighbors (): </h3>`
+            let neighbors = "";
+            for (const neighbor of this.selectedNodeNeighbors) {
+                neighbors += `${neighbor}, `;
+            }
+            neighbors = neighbors.slice(0, -2);
+            this.infoPanelContent.innerHTML += `<h3>Neighbors (${neighbors}): </h3>`
             // Todo: Add WL information
+        } else if (this.selectedNodeId !== null && this.wlIteration === 0) {
+            this.infoPanelContent.innerHTML = `Run the WL iteration to see the information.`;
         }
     }
 
@@ -366,7 +417,6 @@ class GraphVisualizer {
     }
 
     getIntColor(index) {
-        console.log(index);
         if (index === undefined || index === null) return '#999';
         if (this.colorsMap.has(index)) return this.colorsMap.get(index);
 

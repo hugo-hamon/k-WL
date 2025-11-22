@@ -11,6 +11,8 @@ export const GRAPH_VISUALIZATION_CONFIG = {
     toggleModeButtonId: "toggle-mode-btn",
     togglePhysicsButtonId: "toggle-physics-btn",
     infoPanelContentId: "info-content",
+    iterateButtonId: "iterate-btn",
+    kValueInputId: "k-value",
   },
   // Configuration spécifique au rendu 3D
   graph3d: {
