@@ -1,10 +1,10 @@
-from .utils.graph import generate_random_graph, wl_1_iterative
+from .utils.graph import generate_random_graph, wl_1_iterative, parse_graphs, FWL2
 from .utils.message import log_error
 from .config import load_config
 import networkx as nx
 import logging
 import eel
-import ast
+from gevent.threadpool import ThreadPool
 
 
 class App:
@@ -13,6 +13,8 @@ class App:
         self.logger = logging.getLogger(__name__)
 
         self.graphs = []
+        self.fwl2 = None
+        self.fwl_pool = ThreadPool(1)
 
     def run(self):
         try:
@@ -31,95 +33,62 @@ class App:
                 self.logger,
             )
 
-    def eel_generate_random_graph(self, graph_size: str, graph_density: str) -> None:
-        """Generate a random graph, and set it as the current / only graph"""
+    def eel_generate_random_graph(self, graph_size: str, graph_density: str):
         try:
-            graph_size = int(graph_size)
-            graph_density = float(graph_density)
-        except ValueError:
-            log_error(
-                f"Invalid graph size or density: {graph_size} or {graph_density}",
-                self.logger,
-            )
+            size, density = int(graph_size), float(graph_density)
+            if not 0 <= size <= 10000 or not 0 <= density <= 1:
+                raise ValueError("Taille attendue : 0 à 10 000 ; densité : 0 à 1.")
+            self.graphs = [generate_random_graph(size, density)]
+            self.fwl2 = None
+            return {"ok": True}
+        except (ValueError, TypeError) as error:
+            return {"error": str(error)}
 
-        self.logger.info(
-            f"Generating random graph with size {graph_size} and density {graph_density}"
-        )
+    def eel_load_graph_from_list(self, graph_list):
+        try:
+            text = graph_list if isinstance(graph_list, str) else "".join(graph_list)
+            graphs = parse_graphs(text)
+            self.graphs = graphs
+            self.fwl2 = None
+            return {"ok": True}
+        except (ValueError, TypeError) as error:
+            return {"error": str(error)}
 
-        new_graph = generate_random_graph(graph_size, graph_density)
-        self.graphs = [new_graph]
+    def eel_get_graph(self):
+        return [{"nodes": node, "label": graph.nodes[node].get("label", node),
+                 "graph": index, "edges": list(graph.edges(node))}
+                for index, graph in enumerate(self.graphs) for node in graph]
 
-        self.logger.info("Graph generated successfully")
+    def eel_export_graphs(self):
+        # Preserve graph boundaries and isolated vertices, using original labels.
+        result = []
+        for graph in self.graphs:
+            label = lambda u: graph.nodes[u].get("label", u)
+            rows = [(label(u), label(v)) for u, v in graph.edges()]
+            rows.extend((label(u),) for u in graph if graph.degree(u) == 0)
+            result.append(str(rows))
+        return "\n".join(result)
 
-    def _extract_valid_lists(self, s: str) -> list[list[tuple[int, int]]]:
-        stack = []
-        results = []
+    def eel_fwl2(self, advance=False):
+        # Native worker keeps Eel's event loop responsive during cubic refinement.
+        def calculate():
+            if self.fwl2 is None:
+                self.fwl2 = FWL2(self.graphs)
+            if advance:
+                self.fwl2.step()
+            return self.fwl2.summary()
+        try:
+            return self.fwl_pool.spawn(calculate).get()
+        except ValueError as error:
+            return {"error": str(error)}
 
-        for i, ch in enumerate(s):
-            if ch == "[":
-                stack.append(i)
-            elif ch == "]" and stack:
-                start = stack.pop()
-                block = s[start : i + 1]
-
-                # Tester si c'est une liste valide Python et qu'il contient des tuples et qu'il n'est pas vide
-                try:
-                    if (
-                        isinstance(ast.literal_eval(block), list)
-                        and all(isinstance(item, tuple) for item in ast.literal_eval(block))
-                        and len(ast.literal_eval(block)) > 0
-                    ):
-                        results.append(ast.literal_eval(block))
-                except Exception as _:
-                    print("One string is not a valid list")
-
-        return results
-
-    def eel_load_graph_from_list(self, graph_list: list[str]) -> None:
-        """Load a graph from a list"""
-        # Make a single string from the list
-        string = "".join(graph_list)
-        string = string.replace(" ", "").replace("\n", "")
-
-        # Match all [(x,y), (x,y), ...] exactly
-        graphs = self._extract_valid_lists(string)
-
-        normalized_graphs = []
-        max_value = 0
-        for graph in graphs:
-            current_min_value = min(min(node) for node in graph)
-            if current_min_value < max_value:
-                new_graph = []
-                for node in graph:
-                    new_node = (node[0] + max_value, node[1] + max_value)
-                    new_graph.append(new_node)
-                normalized_graphs.append(new_graph)
-                max_value = max(max(node) for node in new_graph) + 1
-            else:
-                normalized_graphs.append(graph)
-                max_value = max(max(node) for node in graph) + 1
-
-        # Create NetworkX graphs
-        self.graphs = [nx.Graph(graph) for graph in normalized_graphs]
-
-    def eel_get_graph(self) -> dict:
-        """Get the current graphs as a single list of nodes and edges"""
-        list_nodes = [list(graph.nodes()) for graph in self.graphs]
-        list_edges = [list(graph.edges()) for graph in self.graphs]
-
-        # Merge nodes and edges into a single list
-        merged_nodes = []
-        merged_edges = []
-        for nodes, edges in zip(list_nodes, list_edges):
-            merged_nodes.extend(nodes)
-            merged_edges.extend(edges)
-
-        to_send = []
-        for node in merged_nodes:
-            edges = [edge for edge in merged_edges if edge[0] == node or edge[1] == node]
-            to_send.append({"nodes": node, "edges": edges})
-
-        return to_send
+    def eel_fwl2_window(self, graph_index, row, column, size=24):
+        try:
+            if self.fwl2 is None:
+                raise ValueError("Initialisez le 2-FWL avant de consulter sa matrice.")
+            return self.fwl2.window(int(graph_index), row, column, size)
+        except (ValueError, TypeError) as error:
+            return {"error": str(error)}
 
     def eel_wl_1_iterative(self, colors: list[tuple[int, int]]):
         # convert list to dict as {node: color, node: color, ...}

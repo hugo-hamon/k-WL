@@ -4,7 +4,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>k-WL Visualization 3D</title>
+  <title>k-WL Visualization</title>
 
   <script type="text/javascript" src="/eel.js"></script>
   <script src="//cdn.jsdelivr.net/npm/3d-force-graph"></script>
@@ -15,7 +15,7 @@
 </head>
 
 <body>
-  <h1>k-Weisfeiler-Leman Visualization (3D)</h1>
+  <h1>k-Weisfeiler-Leman Visualization</h1>
 
   <div class="controls">
     <div class="top">
@@ -28,8 +28,8 @@
       </div>
 
       <div class="control-group wl-controls">
-        <label for="k-value">k:</label>
-        <input type="number" id="k-value" value="1" min="1" max="2" />
+        <label for="k-value">Test :</label>
+        <select id="k-value"><option value="1">1-WL</option><option value="2">2-FWL (paires)</option></select>
         <button id="iterate-btn">Run WL Iteration</button>
       </div>
 
@@ -40,16 +40,17 @@
 
       <div class="control-group status-group">
         <span id="iteration-info">Iteration: 0</span>
-        <span id="status-info">Status: Ready</span>
+        <span id="status-info" role="status">Status: Ready</span>
       </div>
     </div>
     <div class="bottom">
       <div class="control-group load-group">
-        <textarea id="edge-list-input" rows="4" placeholder="Enter edges format: [(0, 1), (1, 2)]"></textarea>
+        <textarea id="edge-list-input" rows="4" aria-label="Graphes par arêtes ou voisinages" aria-describedby="graph-input-help" placeholder="[(0, 1), (1, 2, 3), (4,)]"></textarea>
         <button id="load-graph-btn">Load from List</button>
         <button id="save-graph-clipboard-btn">Save to clipboard</button>
       </div>
     </div>
+    <p id="graph-input-help">Manière d'instancier un graphe -- Arêtes : [(0, 1), (1, 2)] · Voisinages : [(0, 1, 2), (2, 3)]</p>
   </div>
 
   <div class="container">
@@ -57,6 +58,7 @@
     <div id="info-panel">
       <h2>Node Information</h2>
       <div id="info-content">Click a node (Left Click) to see details. Right Click to move/rotate.</div>
+      <div id="fwl-panel" hidden></div>
       <div id="debug-info"></div>
     </div>
   </div>

@@ -212,8 +212,7 @@ function setupInteractionButtons() {
 
             if (data) {
                 // On formate pour le input de l'index [(0,1), (1,2)]
-                const allEdges = data.graphs.flatMap(g => g.edges);
-                const textToCopy = `[${allEdges.join(', ')}]`;
+                const textToCopy = data.graphs.map(g => `[${g.edges.join(', ')}]`).join("\n");
 
                 navigator.clipboard.writeText(textToCopy).then(() => {
                     const originalText = button.textContent;
@@ -230,8 +229,7 @@ function setupInteractionButtons() {
             const graphType = button.dataset.graph;
             const data = TYPICAL_GRAPHS[graphType];
             if (data && graphVisualizerInstance) {
-                const allEdges = data.graphs.flatMap(g => g.edges);
-                const formattedList = `[${allEdges.join(', ')}]`;
+                const formattedList = data.graphs.map(g => `[${g.edges.join(', ')}]`).join("\n");
 
                 // On remplit la zone de texte et on clique sur le bouton de chargement
                 // C'est un moyen simple de simuler l'action sans modifier index.js en profondeur

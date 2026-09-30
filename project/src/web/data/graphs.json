@@ -50648,15 +50648,9 @@
             }
           ],
           "description": "Paire issue de la catégorie CFI, ID original 319."
-        }
-      }
-    },
-    {
-      "name": "BREC - 4 Vertex Condition",
-      "description": "Graphes fortement réguliers réspectant la condition 4-Vertex (Pour plus d'informations, voir : https://arxiv.org/abs/2107.00076)",
-      "graphs": {
-        "4-Vertex_Condition_320": {
-          "name": "Pair 320 (4-Vertex_Condition)",
+        },
+        "CFI_320": {
+          "name": "Pair 320 (CFI)",
           "graphs": [
             {
               "edges": [
@@ -50967,10 +50961,10 @@
               ]
             }
           ],
-          "description": "Paire issue de la catégorie 4-Vertex_Condition, ID original 320."
+          "description": "Paire issue de la catégorie CFI, ID original 320."
         },
-        "4-Vertex_Condition_321": {
-          "name": "Pair 321 (4-Vertex_Condition)",
+        "CFI_321": {
+          "name": "Pair 321 (CFI)",
           "graphs": [
             {
               "edges": [
@@ -51305,10 +51299,10 @@
               ]
             }
           ],
-          "description": "Paire issue de la catégorie 4-Vertex_Condition, ID original 321."
+          "description": "Paire issue de la catégorie CFI, ID original 321."
         },
-        "4-Vertex_Condition_322": {
-          "name": "Pair 322 (4-Vertex_Condition)",
+        "CFI_322": {
+          "name": "Pair 322 (CFI)",
           "graphs": [
             {
               "edges": [
@@ -51679,10 +51673,10 @@
               ]
             }
           ],
-          "description": "Paire issue de la catégorie 4-Vertex_Condition, ID original 322."
+          "description": "Paire issue de la catégorie CFI, ID original 322."
         },
-        "4-Vertex_Condition_323": {
-          "name": "Pair 323 (4-Vertex_Condition)",
+        "CFI_323": {
+          "name": "Pair 323 (CFI)",
           "graphs": [
             {
               "edges": [
@@ -51993,10 +51987,10 @@
               ]
             }
           ],
-          "description": "Paire issue de la catégorie 4-Vertex_Condition, ID original 323."
+          "description": "Paire issue de la catégorie CFI, ID original 323."
         },
-        "4-Vertex_Condition_324": {
-          "name": "Pair 324 (4-Vertex_Condition)",
+        "CFI_324": {
+          "name": "Pair 324 (CFI)",
           "graphs": [
             {
               "edges": [
@@ -52691,10 +52685,10 @@
               ]
             }
           ],
-          "description": "Paire issue de la catégorie 4-Vertex_Condition, ID original 324."
+          "description": "Paire issue de la catégorie CFI, ID original 324."
         },
-        "4-Vertex_Condition_325": {
-          "name": "Pair 325 (4-Vertex_Condition)",
+        "CFI_325": {
+          "name": "Pair 325 (CFI)",
           "graphs": [
             {
               "edges": [
@@ -53061,10 +53055,10 @@
               ]
             }
           ],
-          "description": "Paire issue de la catégorie 4-Vertex_Condition, ID original 325."
+          "description": "Paire issue de la catégorie CFI, ID original 325."
         },
-        "4-Vertex_Condition_326": {
-          "name": "Pair 326 (4-Vertex_Condition)",
+        "CFI_326": {
+          "name": "Pair 326 (CFI)",
           "graphs": [
             {
               "edges": [
@@ -53431,10 +53425,10 @@
               ]
             }
           ],
-          "description": "Paire issue de la catégorie 4-Vertex_Condition, ID original 326."
+          "description": "Paire issue de la catégorie CFI, ID original 326."
         },
-        "4-Vertex_Condition_327": {
-          "name": "Pair 327 (4-Vertex_Condition)",
+        "CFI_327": {
+          "name": "Pair 327 (CFI)",
           "graphs": [
             {
               "edges": [
@@ -53813,10 +53807,10 @@
               ]
             }
           ],
-          "description": "Paire issue de la catégorie 4-Vertex_Condition, ID original 327."
+          "description": "Paire issue de la catégorie CFI, ID original 327."
         },
-        "4-Vertex_Condition_328": {
-          "name": "Pair 328 (4-Vertex_Condition)",
+        "CFI_328": {
+          "name": "Pair 328 (CFI)",
           "graphs": [
             {
               "edges": [
@@ -54347,10 +54341,10 @@
               ]
             }
           ],
-          "description": "Paire issue de la catégorie 4-Vertex_Condition, ID original 328."
+          "description": "Paire issue de la catégorie CFI, ID original 328."
         },
-        "4-Vertex_Condition_329": {
-          "name": "Pair 329 (4-Vertex_Condition)",
+        "CFI_329": {
+          "name": "Pair 329 (CFI)",
           "graphs": [
             {
               "edges": [
@@ -54741,10 +54735,10 @@
               ]
             }
           ],
-          "description": "Paire issue de la catégorie 4-Vertex_Condition, ID original 329."
+          "description": "Paire issue de la catégorie CFI, ID original 329."
         },
-        "4-Vertex_Condition_330": {
-          "name": "Pair 330 (4-Vertex_Condition)",
+        "CFI_330": {
+          "name": "Pair 330 (CFI)",
           "graphs": [
             {
               "edges": [
@@ -55335,10 +55329,10 @@
               ]
             }
           ],
-          "description": "Paire issue de la catégorie 4-Vertex_Condition, ID original 330."
+          "description": "Paire issue de la catégorie CFI, ID original 330."
         },
-        "4-Vertex_Condition_331": {
-          "name": "Pair 331 (4-Vertex_Condition)",
+        "CFI_331": {
+          "name": "Pair 331 (CFI)",
           "graphs": [
             {
               "edges": [
@@ -55825,10 +55819,10 @@
               ]
             }
           ],
-          "description": "Paire issue de la catégorie 4-Vertex_Condition, ID original 331."
+          "description": "Paire issue de la catégorie CFI, ID original 331."
         },
-        "4-Vertex_Condition_332": {
-          "name": "Pair 332 (4-Vertex_Condition)",
+        "CFI_332": {
+          "name": "Pair 332 (CFI)",
           "graphs": [
             {
               "edges": [
@@ -56639,10 +56633,10 @@
               ]
             }
           ],
-          "description": "Paire issue de la catégorie 4-Vertex_Condition, ID original 332."
+          "description": "Paire issue de la catégorie CFI, ID original 332."
         },
-        "4-Vertex_Condition_333": {
-          "name": "Pair 333 (4-Vertex_Condition)",
+        "CFI_333": {
+          "name": "Pair 333 (CFI)",
           "graphs": [
             {
               "edges": [
@@ -56785,10 +56779,10 @@
               ]
             }
           ],
-          "description": "Paire issue de la catégorie 4-Vertex_Condition, ID original 333."
+          "description": "Paire issue de la catégorie CFI, ID original 333."
         },
-        "4-Vertex_Condition_334": {
-          "name": "Pair 334 (4-Vertex_Condition)",
+        "CFI_334": {
+          "name": "Pair 334 (CFI)",
           "graphs": [
             {
               "edges": [
@@ -57271,10 +57265,10 @@
               ]
             }
           ],
-          "description": "Paire issue de la catégorie 4-Vertex_Condition, ID original 334."
+          "description": "Paire issue de la catégorie CFI, ID original 334."
         },
-        "4-Vertex_Condition_335": {
-          "name": "Pair 335 (4-Vertex_Condition)",
+        "CFI_335": {
+          "name": "Pair 335 (CFI)",
           "graphs": [
             {
               "edges": [
@@ -57725,10 +57719,10 @@
               ]
             }
           ],
-          "description": "Paire issue de la catégorie 4-Vertex_Condition, ID original 335."
+          "description": "Paire issue de la catégorie CFI, ID original 335."
         },
-        "4-Vertex_Condition_336": {
-          "name": "Pair 336 (4-Vertex_Condition)",
+        "CFI_336": {
+          "name": "Pair 336 (CFI)",
           "graphs": [
             {
               "edges": [
@@ -57883,10 +57877,10 @@
               ]
             }
           ],
-          "description": "Paire issue de la catégorie 4-Vertex_Condition, ID original 336."
+          "description": "Paire issue de la catégorie CFI, ID original 336."
         },
-        "4-Vertex_Condition_337": {
-          "name": "Pair 337 (4-Vertex_Condition)",
+        "CFI_337": {
+          "name": "Pair 337 (CFI)",
           "graphs": [
             {
               "edges": [
@@ -58557,10 +58551,10 @@
               ]
             }
           ],
-          "description": "Paire issue de la catégorie 4-Vertex_Condition, ID original 337."
+          "description": "Paire issue de la catégorie CFI, ID original 337."
         },
-        "4-Vertex_Condition_338": {
-          "name": "Pair 338 (4-Vertex_Condition)",
+        "CFI_338": {
+          "name": "Pair 338 (CFI)",
           "graphs": [
             {
               "edges": [
@@ -59043,10 +59037,10 @@
               ]
             }
           ],
-          "description": "Paire issue de la catégorie 4-Vertex_Condition, ID original 338."
+          "description": "Paire issue de la catégorie CFI, ID original 338."
         },
-        "4-Vertex_Condition_339": {
-          "name": "Pair 339 (4-Vertex_Condition)",
+        "CFI_339": {
+          "name": "Pair 339 (CFI)",
           "graphs": [
             {
               "edges": [
@@ -59413,10 +59407,10 @@
               ]
             }
           ],
-          "description": "Paire issue de la catégorie 4-Vertex_Condition, ID original 339."
+          "description": "Paire issue de la catégorie CFI, ID original 339."
         },
-        "4-Vertex_Condition_340": {
-          "name": "Pair 340 (4-Vertex_Condition)",
+        "CFI_340": {
+          "name": "Pair 340 (CFI)",
           "graphs": [
             {
               "edges": [
@@ -60043,10 +60037,10 @@
               ]
             }
           ],
-          "description": "Paire issue de la catégorie 4-Vertex_Condition, ID original 340."
+          "description": "Paire issue de la catégorie CFI, ID original 340."
         },
-        "4-Vertex_Condition_341": {
-          "name": "Pair 341 (4-Vertex_Condition)",
+        "CFI_341": {
+          "name": "Pair 341 (CFI)",
           "graphs": [
             {
               "edges": [
@@ -61077,10 +61071,10 @@
               ]
             }
           ],
-          "description": "Paire issue de la catégorie 4-Vertex_Condition, ID original 341."
+          "description": "Paire issue de la catégorie CFI, ID original 341."
         },
-        "4-Vertex_Condition_342": {
-          "name": "Pair 342 (4-Vertex_Condition)",
+        "CFI_342": {
+          "name": "Pair 342 (CFI)",
           "graphs": [
             {
               "edges": [
@@ -61835,10 +61829,10 @@
               ]
             }
           ],
-          "description": "Paire issue de la catégorie 4-Vertex_Condition, ID original 342."
+          "description": "Paire issue de la catégorie CFI, ID original 342."
         },
-        "4-Vertex_Condition_343": {
-          "name": "Pair 343 (4-Vertex_Condition)",
+        "CFI_343": {
+          "name": "Pair 343 (CFI)",
           "graphs": [
             {
               "edges": [
@@ -62209,10 +62203,10 @@
               ]
             }
           ],
-          "description": "Paire issue de la catégorie 4-Vertex_Condition, ID original 343."
+          "description": "Paire issue de la catégorie CFI, ID original 343."
         },
-        "4-Vertex_Condition_344": {
-          "name": "Pair 344 (4-Vertex_Condition)",
+        "CFI_344": {
+          "name": "Pair 344 (CFI)",
           "graphs": [
             {
               "edges": [
@@ -62919,10 +62913,10 @@
               ]
             }
           ],
-          "description": "Paire issue de la catégorie 4-Vertex_Condition, ID original 344."
+          "description": "Paire issue de la catégorie CFI, ID original 344."
         },
-        "4-Vertex_Condition_345": {
-          "name": "Pair 345 (4-Vertex_Condition)",
+        "CFI_345": {
+          "name": "Pair 345 (CFI)",
           "graphs": [
             {
               "edges": [
@@ -64417,10 +64411,10 @@
               ]
             }
           ],
-          "description": "Paire issue de la catégorie 4-Vertex_Condition, ID original 345."
+          "description": "Paire issue de la catégorie CFI, ID original 345."
         },
-        "4-Vertex_Condition_346": {
-          "name": "Pair 346 (4-Vertex_Condition)",
+        "CFI_346": {
+          "name": "Pair 346 (CFI)",
           "graphs": [
             {
               "edges": [
@@ -65011,10 +65005,10 @@
               ]
             }
           ],
-          "description": "Paire issue de la catégorie 4-Vertex_Condition, ID original 346."
+          "description": "Paire issue de la catégorie CFI, ID original 346."
         },
-        "4-Vertex_Condition_347": {
-          "name": "Pair 347 (4-Vertex_Condition)",
+        "CFI_347": {
+          "name": "Pair 347 (CFI)",
           "graphs": [
             {
               "edges": [
@@ -65793,10 +65787,10 @@
               ]
             }
           ],
-          "description": "Paire issue de la catégorie 4-Vertex_Condition, ID original 347."
+          "description": "Paire issue de la catégorie CFI, ID original 347."
         },
-        "4-Vertex_Condition_348": {
-          "name": "Pair 348 (4-Vertex_Condition)",
+        "CFI_348": {
+          "name": "Pair 348 (CFI)",
           "graphs": [
             {
               "edges": [
@@ -66143,10 +66137,10 @@
               ]
             }
           ],
-          "description": "Paire issue de la catégorie 4-Vertex_Condition, ID original 348."
+          "description": "Paire issue de la catégorie CFI, ID original 348."
         },
-        "4-Vertex_Condition_349": {
-          "name": "Pair 349 (4-Vertex_Condition)",
+        "CFI_349": {
+          "name": "Pair 349 (CFI)",
           "graphs": [
             {
               "edges": [
@@ -66773,10 +66767,10 @@
               ]
             }
           ],
-          "description": "Paire issue de la catégorie 4-Vertex_Condition, ID original 349."
+          "description": "Paire issue de la catégorie CFI, ID original 349."
         },
-        "4-Vertex_Condition_350": {
-          "name": "Pair 350 (4-Vertex_Condition)",
+        "CFI_350": {
+          "name": "Pair 350 (CFI)",
           "graphs": [
             {
               "edges": [
@@ -67347,10 +67341,10 @@
               ]
             }
           ],
-          "description": "Paire issue de la catégorie 4-Vertex_Condition, ID original 350."
+          "description": "Paire issue de la catégorie CFI, ID original 350."
         },
-        "4-Vertex_Condition_351": {
-          "name": "Pair 351 (4-Vertex_Condition)",
+        "CFI_351": {
+          "name": "Pair 351 (CFI)",
           "graphs": [
             {
               "edges": [
@@ -67977,10 +67971,10 @@
               ]
             }
           ],
-          "description": "Paire issue de la catégorie 4-Vertex_Condition, ID original 351."
+          "description": "Paire issue de la catégorie CFI, ID original 351."
         },
-        "4-Vertex_Condition_352": {
-          "name": "Pair 352 (4-Vertex_Condition)",
+        "CFI_352": {
+          "name": "Pair 352 (CFI)",
           "graphs": [
             {
               "edges": [
@@ -69199,10 +69193,10 @@
               ]
             }
           ],
-          "description": "Paire issue de la catégorie 4-Vertex_Condition, ID original 352."
+          "description": "Paire issue de la catégorie CFI, ID original 352."
         },
-        "4-Vertex_Condition_353": {
-          "name": "Pair 353 (4-Vertex_Condition)",
+        "CFI_353": {
+          "name": "Pair 353 (CFI)",
           "graphs": [
             {
               "edges": [
@@ -69957,10 +69951,10 @@
               ]
             }
           ],
-          "description": "Paire issue de la catégorie 4-Vertex_Condition, ID original 353."
+          "description": "Paire issue de la catégorie CFI, ID original 353."
         },
-        "4-Vertex_Condition_354": {
-          "name": "Pair 354 (4-Vertex_Condition)",
+        "CFI_354": {
+          "name": "Pair 354 (CFI)",
           "graphs": [
             {
               "edges": [
@@ -70727,10 +70721,10 @@
               ]
             }
           ],
-          "description": "Paire issue de la catégorie 4-Vertex_Condition, ID original 354."
+          "description": "Paire issue de la catégorie CFI, ID original 354."
         },
-        "4-Vertex_Condition_355": {
-          "name": "Pair 355 (4-Vertex_Condition)",
+        "CFI_355": {
+          "name": "Pair 355 (CFI)",
           "graphs": [
             {
               "edges": [
@@ -71101,10 +71095,10 @@
               ]
             }
           ],
-          "description": "Paire issue de la catégorie 4-Vertex_Condition, ID original 355."
+          "description": "Paire issue de la catégorie CFI, ID original 355."
         },
-        "4-Vertex_Condition_356": {
-          "name": "Pair 356 (4-Vertex_Condition)",
+        "CFI_356": {
+          "name": "Pair 356 (CFI)",
           "graphs": [
             {
               "edges": [
@@ -72135,10 +72129,10 @@
               ]
             }
           ],
-          "description": "Paire issue de la catégorie 4-Vertex_Condition, ID original 356."
+          "description": "Paire issue de la catégorie CFI, ID original 356."
         },
-        "4-Vertex_Condition_357": {
-          "name": "Pair 357 (4-Vertex_Condition)",
+        "CFI_357": {
+          "name": "Pair 357 (CFI)",
           "graphs": [
             {
               "edges": [
@@ -72649,10 +72643,10 @@
               ]
             }
           ],
-          "description": "Paire issue de la catégorie 4-Vertex_Condition, ID original 357."
+          "description": "Paire issue de la catégorie CFI, ID original 357."
         },
-        "4-Vertex_Condition_358": {
-          "name": "Pair 358 (4-Vertex_Condition)",
+        "CFI_358": {
+          "name": "Pair 358 (CFI)",
           "graphs": [
             {
               "edges": [
@@ -73083,10 +73077,10 @@
               ]
             }
           ],
-          "description": "Paire issue de la catégorie 4-Vertex_Condition, ID original 358."
+          "description": "Paire issue de la catégorie CFI, ID original 358."
         },
-        "4-Vertex_Condition_359": {
-          "name": "Pair 359 (4-Vertex_Condition)",
+        "CFI_359": {
+          "name": "Pair 359 (CFI)",
           "graphs": [
             {
               "edges": [
@@ -73921,8 +73915,14 @@
               ]
             }
           ],
-          "description": "Paire issue de la catégorie 4-Vertex_Condition, ID original 359."
-        },
+          "description": "Paire issue de la catégorie CFI, ID original 359."
+        }
+      }
+    },
+    {
+      "name": "BREC - 4 Vertex Condition",
+      "description": "Graphes fortement réguliers réspectant la condition 4-Vertex (Pour plus d'informations, voir : https://arxiv.org/abs/2107.00076)",
+      "graphs": {
         "4-Vertex_Condition_360": {
           "name": "Pair 360 (4-Vertex_Condition)",
           "graphs": [

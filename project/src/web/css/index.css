@@ -595,3 +595,24 @@ h1 {
 .copy-btn:active, .load-main-btn:active {
   transform: translateY(1px);
 }
+/* Bounded 2-FWL matrix windows keep layout and DOM size independent of n². */
+[hidden] { display: none !important; }
+#graph-input-help { margin: 0; font-size: .85rem; color: #555; width: 100%; }
+.top { flex-wrap: wrap; gap: 12px; }
+.status-group { white-space: normal; flex-wrap: wrap; }
+#info-panel, #graph-network { min-width: 0; }
+#fwl-panel { max-width: 100%; }
+#k-value { padding: 7px; border: 1px solid #bbb; border-radius: 4px; background: white; }
+.fwl-graph { margin-bottom: 28px; }
+.fwl-graph h3 { margin: 0 0 12px; }
+.fwl-graph h4 { margin: 16px 0 10px; }
+.matrix-scroll { overflow: auto; max-width: min(100%, 1100px); border: 1px solid #ddd; }
+.matrix-spacer { position: relative; }
+.color-matrix { display: block; position: sticky; left: 0; top: 0; cursor: crosshair; }
+.color-matrix:focus-visible { outline: 2px solid #174bb3; outline-offset: -2px; }
+button:disabled { cursor: wait; opacity: .6; }
+@media (max-width: 768px) {
+  .container { height: auto; overflow: visible; }
+  #graph-network { height: 420px; }
+  #info-panel { height: auto; padding: 15px; }
+}
